@@ -5,9 +5,10 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/gin-gonic/contrib/ginrus"
-	router "github.com/u2takey/malcolm/server"
 	"github.com/urfave/cli"
+
+	"github.com/u2takey/malcolm/model"
+	router "github.com/u2takey/malcolm/server"
 )
 
 // Command exports the server command.
@@ -20,11 +21,6 @@ var Command = cli.Command{
 			EnvVar: "DEBUG",
 			Name:   "debug",
 			Usage:  "start the server in debug mode",
-		},
-		cli.StringFlag{
-			EnvVar: "SERVER_HOST",
-			Name:   "server-host",
-			Usage:  "server host",
 		},
 		cli.StringFlag{
 			EnvVar: "SERVER_ADDR",
@@ -42,11 +38,10 @@ func server(c *cli.Context) error {
 	} else {
 		logrus.SetLevel(logrus.WarnLevel)
 	}
+	cfg := &model.Config{}
 
 	// setup the server and start the listener
-	handler := router.Load(
-		ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true),
-	)
+	handler := router.Load(cfg)
 
 	// start the server
 	return http.ListenAndServe(
