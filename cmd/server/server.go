@@ -2,7 +2,6 @@ package server
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -28,6 +27,29 @@ var Command = cli.Command{
 			Usage:  "server address",
 			Value:  ":7700",
 		},
+		cli.StringFlag{
+			EnvVar: "MONGO_HOST",
+			Name:   "mongo-host",
+			Usage:  "mogno host",
+			Value:  "mongo:27017",
+		},
+		cli.StringFlag{
+			EnvVar: "MONGO_DB",
+			Name:   "mongo-db",
+			Usage:  "mogno db",
+			Value:  "malcolm",
+		},
+		cli.BoolFlag{
+			EnvVar: "MONGO_DIRECT",
+			Name:   "mongo-direct",
+			Usage:  "mongo direct",
+		},
+		cli.StringFlag{
+			EnvVar: "KUBERNETE_ADDR",
+			Name:   "kubernete-addr",
+			Usage:  "kubernete addr",
+			Value:  "kubernetes.default",
+		},
 	},
 }
 
@@ -39,7 +61,10 @@ func server(c *cli.Context) error {
 		logrus.SetLevel(logrus.WarnLevel)
 	}
 	cfg := &model.Config{}
-
+	cfg.MgoCfg.Host = c.String("mongo-host")
+	cfg.MgoCfg.DB = c.String("mongo-db")
+	cfg.MgoCfg.Direct = c.Bool("mongo-direct")
+	cfg.KubeAddr = c.String("kubernete-addr")
 	// setup the server and start the listener
 	handler := router.Load(cfg)
 

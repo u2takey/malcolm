@@ -1,33 +1,69 @@
 package model
 
+import (
+	batchv1 "k8s.io/client-go/pkg/apis/batch/v1"
+	"labix.org/v2/mgo/bson"
+	"time"
+)
+
 // Trigger Represent trigger method to start a build
 type ManualTrigger struct {
 	TriggerParam map[string]string // for a trigger
 }
 
-type ManualTriggerConfig struct {
-	Options []Option
+type Trigger interface {
 }
 
 type Build struct {
-	ID       int64    `json:"id"            db:"id,pk"`
-	Trigger  Trigger  `json:"trigger"       db:"trigger"`
-	Status   string   `json:"status"        db:"status"`
-	Enqueued int64    `json:"enqueued"      db:"enqueued"`
-	Created  int64    `json:"created"       db:"created"`
-	Started  int64    `json:"started"       db:"started"`
-	Finished int64    `json:"finished"      db:"finished"`
-	Message  string   `json:"message"       db:"message"`
-	Author   string   `json:"author"        db:"author"`
-	Errors   []string `json:"error"         db:"error"`
+	ID              bson.ObjectId `bson:"_id"`
+	JobID           bson.ObjectId `bson:"jobid" index:"index"`
+	JobName         string        `bson:"jobsname,omitempty"`
+	Trigger         Trigger       `bson:"trigger,omitempty"`
+	Title           string        `bson:"title,omitempty"`
+	Description     string        `bson:"description,omitempty"`
+	ConcurrentBuild bool          `bson:"concurrentBuild"`
+	Project         string        `bson:"project,omitempty" index:"index"`
+	Status          string        `bson:"status,omitempty" index:"index"`
+	Created         time.Time     `bson:"created"`
+	Started         time.Time     `bson:"started"`
+	Finished        time.Time     `bson:"finished"`
+	Message         []byte        `bson:"message,omitempty"`
+	Works           []Work        `bson:"works,omitempty"`
+	Author          string        `bson:"author,omitempty"`
+	Error           string        `bson:"error,omitempty"`
+}
+
+type Work struct {
+	Title       string      `bson:"title,omitempty"`
+	Description string      `bson:"description,omitempty"`
+	Status      string      `bson:"status,omitempty"`
+	Started     time.Time   `bson:"started"`
+	Finished    time.Time   `bson:"finished"`
+	Message     []byte      `bson:"message,omitempty"`
+	Error       string      `bson:"error,omitempty"`
+	Steps       []*WorkStep `bson:"steps,omitempty"`
+}
+
+type WorkStep struct {
+	Title       string       `bson:"title,omitempty"`
+	Description string       `bson:"description,omitempty"`
+	Status      string       `bson:"status,omitempty"`
+	Started     time.Time    `bson:"started"`
+	Finished    time.Time    `bson:"finished"`
+	Message     []byte       `bson:"message,omitempty"`
+	Error       string       `bson:"error,omitempty"`
+	Config      *WorkConfig  `json:"-" bson:"-"`
+	K8sjob      *batchv1.Job `bson:"-"`
 }
 
 type Log struct {
-	ID      int64  `db:"log_id,pk"`
-	BuildID int64  `db:"log_id"`
-	Title   string `db:"log_title"`
-	Data    []byte `db:"log_data"`
-	Created int64  `db:"created"`
+	ID          bson.ObjectId `bson:"_id"`
+	BuildID     int64         `bson:"buildid" index:"index"`
+	Title       string        `bson:"title,omitempty"`
+	Description string        `bson:"description,omitempty"`
+	Step        string        `bson:"step"`
+	Data        []byte        `bson:"data,omitempty"`
+	Created     time.Time     `bson:"created"`
 }
 
 // Constraint represent step constraint between steps
@@ -45,18 +81,3 @@ type Log struct {
 //  Branch      Constraint
 //  Status      Constraint
 // }
-
-type Plugin struct {
-	Name        string
-	Version     string
-	Indentifier string
-	Options     []Option
-}
-
-type Option struct {
-	Must        bool
-	Key         string
-	Default     string
-	Choose      []string
-	MultiChoose bool
-}

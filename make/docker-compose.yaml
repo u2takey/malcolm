@@ -1,8 +1,27 @@
 version: '2'
 services:
-  malcolm:
-    build: . 
+  # malcolm:
+  #   build: . 
+  #   command: 
+  #   - server 
+  #   - --debug 
+  #   links:
+  #     - mongo:mongo
+  #   ports:
+  #     - "7700:7700"
+
+  mongo:
+    image: mongo:3.4.6
     ports:
-      - "7700:7700"
+      - "27017:27017"
+    volumes:
+    - /opt/data/mongo_home
+    restart: always
+    mem_limit: 1024m
 
-
+  mongo-exrepss:
+    image: mongo-express:0.40
+    links:
+        - mongo:mongo
+    ports:
+      - "8081:8081"
