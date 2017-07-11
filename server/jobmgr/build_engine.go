@@ -14,7 +14,7 @@ import (
 	batchv1 "k8s.io/client-go/pkg/apis/batch/v1"
 	"k8s.io/client-go/rest"
 
-	"github.com/u2takey/malcolm/model"
+	"github.com/arlert/malcolm/model"
 )
 
 const (

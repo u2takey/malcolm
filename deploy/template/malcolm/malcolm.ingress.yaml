@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: malcolm
+  namespace:  {{malcolm_namespace}}
+  annotations:
+    traefik.frontend.rule.type: pathprefixstrip
+spec:
+  rules:
+  - host: "{{malcolm_address}}"
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: malcolm
+          servicePort: 7700 

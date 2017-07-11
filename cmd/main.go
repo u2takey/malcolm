@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/u2takey/malcolm/cmd/server"
-	"github.com/u2takey/malcolm/version"
+	"github.com/arlert/malcolm/cmd/server"
+	"github.com/arlert/malcolm/version"
 
 	"github.com/ianschenck/envflag"
 	_ "github.com/joho/godotenv/autoload"

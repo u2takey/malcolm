@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: {{malcolm_namespace}}
+  name: malcolm-deploy
+  labels:
+    name: malcolm-deploy
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: malcolm-app
+    spec:
+      containers:
+      - name: malcolm
+        image: {{malcolm_image}}
+        imagePullPolicy: IfNotPresent
+        args:
+        - "server"
+        - "--debug"
+        ports:
+        - containerPort: 7700

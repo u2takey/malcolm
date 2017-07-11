@@ -1,0 +1,12 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  namespace: {{malcolm_namespace}}
+  name: malcolm-mongo-pvc
+spec:
+  storageClassName: {{mogno_storage_class}}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{mogno_pvc_size}}

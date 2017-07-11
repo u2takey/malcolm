@@ -20,11 +20,10 @@ build: build_static build_cross
 
 build_static:
 	mkdir -p make/release
-	go build -o  make/release/malcolm -ldflags '${EXTLDFLAGS}-X github.com/u2takey/malcolm/version.VersionDev=build.$(BUILD_NUMBER)' github.com/u2takey/malcolm/cmd
+	go build -o  make/release/malcolm -ldflags '${EXTLDFLAGS}-X github.com/arlert/malcolm/version.VersionDev=build.$(BUILD_NUMBER)' github.com/arlert/malcolm/cmd
 
 build_cross:
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags '-X github.com/u2takey/malcolm/version.VersionDev=build.$(BUILD_NUMBER)' -o make/release/linux/amd64/malcolm   github.com/u2takey/malcolm/cmd
-	# GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags '-X github.com/u2takey/malcolm/version.VersionDev=build.$(malcolm_BUILD_NUMBER)' -o make/release/darwin/amd64/malcolm  github.com/u2takey/malcolm/cmd
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags '-X github.com/arlert/malcolm/version.VersionDev=build.$(BUILD_NUMBER)' -o make/release/linux/amd64/malcolm   github.com/arlert/malcolm/cmd
 
 build_tar:
 	tar -cvzf make/release/linux/amd64/malcolm.tar.gz   -C make/release/linux/amd64/malcolm

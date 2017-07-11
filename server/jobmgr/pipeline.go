@@ -3,7 +3,7 @@ package jobmgr
 import (
 	"github.com/Sirupsen/logrus"
 
-	"github.com/u2takey/malcolm/model"
+	"github.com/arlert/malcolm/model"
 )
 
 var (

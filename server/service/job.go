@@ -6,9 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"labix.org/v2/mgo/bson"
 
-	"github.com/u2takey/malcolm/model"
-	"github.com/u2takey/malcolm/utils"
-	req "github.com/u2takey/malcolm/utils/reqlog"
+	"github.com/arlert/malcolm/model"
+	"github.com/arlert/malcolm/utils"
+	req "github.com/arlert/malcolm/utils/reqlog"
 )
 
 //-----------------------------------------------------------------

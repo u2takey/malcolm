@@ -8,7 +8,7 @@ import (
 
 	"labix.org/v2/mgo/bson"
 
-	mgoutil "github.com/u2takey/malcolm/utils/mongo"
+	mgoutil "github.com/arlert/malcolm/utils/mongo"
 )
 
 type Config struct {

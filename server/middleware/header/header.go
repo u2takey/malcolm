@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/arlert/malcolm/version"
 	"github.com/gin-gonic/gin"
-	"github.com/u2takey/malcolm/version"
 )
 
 // NoCache is a middleware function that appends headers

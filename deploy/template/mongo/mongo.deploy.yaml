@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace:  {{malcolm_namespace}}
+  name: malcolm-mongo
+  labels:
+    name: malcolm-mongo
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: malcolm-mongo-app
+    spec:
+      containers:
+      - name: malcolm-mongo
+        image: {{malcolm_mongo_image}}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 27017
+        volumeMounts:
+        - name: mongo-storage
+          mountPath: /opt/data/mongo_home
+      volumes:
+      - name: mongo-storage
+        persistentVolumeClaim:
+          claimName: malcolm-mongo-pvc

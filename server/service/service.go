@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"k8s.io/client-go/rest"
 
-	"github.com/u2takey/malcolm/model"
-	"github.com/u2takey/malcolm/server/jobmgr"
-	"github.com/u2takey/malcolm/store"
-	req "github.com/u2takey/malcolm/utils/reqlog"
+	"github.com/arlert/malcolm/model"
+	"github.com/arlert/malcolm/server/jobmgr"
+	"github.com/arlert/malcolm/store"
+	req "github.com/arlert/malcolm/utils/reqlog"
 )
 
 var (
