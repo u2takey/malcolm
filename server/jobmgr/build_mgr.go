@@ -9,10 +9,10 @@ import (
 	"golang.org/x/net/context"
 	"labix.org/v2/mgo/bson"
 
-	"github.com/u2takey/malcolm/model"
-	"github.com/u2takey/malcolm/store"
-	// "github.com/u2takey/malcolm/utils"
-	req "github.com/u2takey/malcolm/utils/reqlog"
+	"github.com/arlert/malcolm/model"
+	"github.com/arlert/malcolm/store"
+	// "github.com/arlert/malcolm/utils"
+	req "github.com/arlert/malcolm/utils/reqlog"
 )
 
 type JobMgr struct {

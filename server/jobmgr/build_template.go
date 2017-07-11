@@ -9,7 +9,7 @@ import (
 	batchv1 "k8s.io/client-go/pkg/apis/batch/v1"
 	"labix.org/v2/mgo/bson"
 
-	"github.com/u2takey/malcolm/model"
+	"github.com/arlert/malcolm/model"
 )
 
 type buildtemplate struct {

@@ -1,10 +1,10 @@
 package service
 
 import (
+	_ "github.com/arlert/malcolm/model"
 	"github.com/gin-gonic/gin"
-	_ "github.com/u2takey/malcolm/model"
 
-	req "github.com/u2takey/malcolm/utils/reqlog"
+	req "github.com/arlert/malcolm/utils/reqlog"
 )
 
 //-----------------------------------------------------------------

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace:  {{malcolm_namespace}}
+  name: malcolm
+spec:
+  ports:
+    - name: authgate
+      port: 7700
+  selector:
+    name: malcolm-app

@@ -3,7 +3,7 @@ package service
 import (
 	"github.com/gin-gonic/gin"
 
-	req "github.com/u2takey/malcolm/utils/reqlog"
+	req "github.com/arlert/malcolm/utils/reqlog"
 )
 
 //-----------------------------------------------------------------

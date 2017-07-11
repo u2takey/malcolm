@@ -7,11 +7,11 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 
-	"github.com/u2takey/malcolm/model"
-	"github.com/u2takey/malcolm/server/middleware/header"
-	"github.com/u2takey/malcolm/server/service"
-	_ "github.com/u2takey/malcolm/utils/loghook"
-	"github.com/u2takey/malcolm/utils/reqlog"
+	"github.com/arlert/malcolm/model"
+	"github.com/arlert/malcolm/server/middleware/header"
+	"github.com/arlert/malcolm/server/service"
+	_ "github.com/arlert/malcolm/utils/loghook"
+	"github.com/arlert/malcolm/utils/reqlog"
 )
 
 // Load loads the router

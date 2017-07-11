@@ -6,8 +6,8 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/urfave/cli"
 
-	"github.com/u2takey/malcolm/model"
-	router "github.com/u2takey/malcolm/server"
+	"github.com/arlert/malcolm/model"
+	router "github.com/arlert/malcolm/server"
 )
 
 // Command exports the server command.
