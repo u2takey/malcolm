@@ -1,11 +1,11 @@
-FROM ubuntu:16.04
+FROM centurylink/ca-certs
 EXPOSE 7700
 
 COPY conf/localtime /etc/localtime
 COPY conf/timezone /etc/timezone
 
-COPY release/linux/amd64/malcolm /ke/malcolm
+COPY release/linux/amd64/malcolm /malcolm
 
-ENTRYPOINT ["/ke/malcolm"]
+ENTRYPOINT ["/malcolm"]
 CMD ["server"]
 
