@@ -63,8 +63,8 @@ func ReqLoggerMiddleware(logger *logrus.Logger, timeFormat string, utc bool) gin
 
 // usage: Entry(c).Debug(".....")
 func Entry(c context.Context) *logrus.Entry {
-	if c, ok := c.(*gin.Context); ok {
-		return logrus.WithField(KeyReqID, c.Request.Header.Get(HeaderReqID))
+	if ctx, ok := c.(*gin.Context); ok {
+		return logrus.WithField(KeyReqID, ctx.Request.Header.Get(HeaderReqID))
 	} else {
 		return logrus.WithField(KeyReqID, c.Value(KeyReqID))
 	}

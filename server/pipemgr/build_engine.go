@@ -1,4 +1,4 @@
-package jobmgr
+package pipemgr
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	// "k8s.io/apimachinery/pkg/runtime"
 	// "k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	batchv1 "k8s.io/client-go/pkg/apis/batch/v1"
@@ -22,7 +22,7 @@ const (
 	defaultBurst = 1e6
 
 	defaultNameSpace = "malcolm" // #todo ->param
-	defaultTimeout   = 3600
+	defaultTimeout   = 60 * time.Minute
 )
 
 type Engine struct {
@@ -58,22 +58,11 @@ func getlabel(job *batchv1.Job) string {
 	return strings.Join(labels, ",")
 }
 
-func getStatus(obj runtime.Object) string {
-	switch object := obj.(type) {
-	case *batchv1.Job:
-		return fmt.Sprintf("active : %d, success : %d, fail : %d",
-			object.Status.Active, object.Status.Succeeded, object.Status.Failed)
-	case *meta_v1.Status:
-		return object.Status
-	default:
-		return ""
-	}
-}
-
 func (e *Engine) RunSyncJobch(work *model.WorkStep, msg chan<- *meassge) {
 	logrus.Debug("RunSyncJobch")
 	job, err := e.client.Jobs(defaultNameSpace).Create(work.K8sjob)
-	logrus.Debugln("create", job)
+	_ = job
+	logrus.Debugf("create:%+v", work.K8sjob.Spec.Template.Spec.Containers)
 	if err != nil {
 		msg <- &meassge{
 			err: err,
@@ -97,14 +86,33 @@ func (e *Engine) RunSyncJobch(work *model.WorkStep, msg chan<- *meassge) {
 	for {
 		select {
 		case watchEvent, open := <-watcher.ResultChan():
-			logrus.Debug("watchEvent", watchEvent)
 			if !open {
 				return
 			}
-			msg <- &meassge{
-				data: fmt.Sprintf("job %s, status: %s", watchEvent.Type, getStatus(watchEvent.Object)),
-			}
 
+			switch object := watchEvent.Object.(type) {
+			case *batchv1.Job:
+				logrus.Debug(fmt.Sprintf("type : %s, active : %d, success : %d, fail : %d",
+					watchEvent.Type, object.Status.Active, object.Status.Succeeded, object.Status.Failed))
+				for _, cond := range object.Status.Conditions {
+					if cond.Type == batchv1.JobComplete {
+						msg <- &meassge{
+							data: "job complete",
+						}
+						return
+					}
+				}
+
+				threshold := int32(4)
+				if object.Status.Failed > threshold {
+					msg <- &meassge{
+						data: "job watch abort after fail 4 times",
+					}
+					return
+				}
+			case *meta_v1.Status:
+				logrus.Debug(object.Status)
+			}
 		case <-time.After(defaultTimeout):
 			msg <- &meassge{
 				err: errors.New("watch time out"),

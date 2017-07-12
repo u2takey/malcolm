@@ -1,14 +1,14 @@
 version: '2'
 services:
-  # malcolm:
-  #   build: . 
-  #   command: 
-  #   - server 
-  #   - --debug 
-  #   links:
-  #     - mongo:mongo
-  #   ports:
-  #     - "7700:7700"
+  malcolm:
+    build: . 
+    command: 
+    - server 
+    - --debug 
+    links:
+      - mongo:mongo
+    ports:
+      - "7700:7700"
 
   mongo:
     image: mongo:3.4.6

@@ -9,7 +9,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/arlert/malcolm/model"
-	"github.com/arlert/malcolm/server/jobmgr"
+	"github.com/arlert/malcolm/server/pipemgr"
 	"github.com/arlert/malcolm/store"
 	req "github.com/arlert/malcolm/utils/reqlog"
 )
@@ -21,8 +21,8 @@ var (
 type Service struct {
 	config *model.Config
 	store  *store.Store
-	jobm   *jobmgr.JobMgr
-	engine *jobmgr.Engine
+	pipem  *pipemgr.PipeMgr
+	engine *pipemgr.Engine
 }
 
 func New(cfg *model.Config) *Service {
@@ -42,16 +42,16 @@ func New(cfg *model.Config) *Service {
 		BearerToken: token,
 	}
 	resconfig.Insecure = true
-	client, err := jobmgr.CreateK8sClientByConfig(resconfig)
+	client, err := pipemgr.CreateK8sClientByConfig(resconfig)
 	if err != nil {
 		logrus.Fatalln("CreateK8sClientByConfig fail", err)
 	}
 	svc := &Service{
 		config: cfg,
 		store:  store.New(&cfg.MgoCfg),
-		engine: jobmgr.NewEngine(client),
+		engine: pipemgr.NewEngine(client),
 	}
-	svc.jobm = jobmgr.NewJobMgr(svc.store, svc.engine)
+	svc.pipem = pipemgr.NewPipeMgr(svc.store, svc.engine)
 	return svc
 }
 

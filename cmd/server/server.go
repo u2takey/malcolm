@@ -48,7 +48,7 @@ var Command = cli.Command{
 			EnvVar: "KUBERNETE_ADDR",
 			Name:   "kubernete-addr",
 			Usage:  "kubernete addr",
-			Value:  "kubernetes.default",
+			Value:  "https://kubernetes.default",
 		},
 	},
 }

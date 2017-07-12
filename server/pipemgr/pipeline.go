@@ -1,4 +1,4 @@
-package jobmgr
+package pipemgr
 
 import (
 	"github.com/Sirupsen/logrus"
@@ -94,7 +94,7 @@ func (p *Pipeline) Stop() {
 }
 
 func (p *Pipeline) next() {
-	logrus.Debug("next", p.Curwork())
+	logrus.Debugf("next : %s : %s  ", p.Curwork().Config.Title, p.Curwork().Config.Plugin)
 	if p.Finished() {
 		p.done <- signal{}
 	} else {
