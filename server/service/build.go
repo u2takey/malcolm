@@ -12,9 +12,9 @@ import (
 // trigger build
 func (s *Service) PostBuild(c *gin.Context) {
 	req.Entry(c).Debug("PostBuild")
-	jobid := c.Param("jobid")
+	pipeid := c.Param("pipeid")
 	ctx := req.Context(c)
-	err := s.jobm.RunJob(ctx, jobid)
+	err := s.pipem.RunPipe(ctx, pipeid)
 	if err != nil {
 		E(c, ErrInvalidParam.WithMessage(err.Error()))
 	}

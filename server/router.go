@@ -33,18 +33,18 @@ func Load(cfg *model.Config) http.Handler {
 	v1group := e.Group("/v1")
 	{
 		//-----------------------------------------------------------------
-		// job
-		v1group.POST("/job", svc.PostJob)            // create job
-		v1group.PATCH("/job/:jobid", svc.PatchJob)   // update job
-		v1group.GET("/job", svc.GetJob)              // get job
-		v1group.GET("/job/:jobid", svc.GetJob)       // get job
-		v1group.DELETE("/job/:jobid", svc.DeleteJob) // delete job
+		// pipe
+		v1group.POST("/pipe", svc.PostPipe)             // create pipe
+		v1group.PATCH("/pipe/:pipeid", svc.PatchPipe)   // update pipe
+		v1group.GET("/pipe", svc.GetPipe)               // get pipe
+		v1group.GET("/pipe/:pipeid", svc.GetPipe)       // get pipe
+		v1group.DELETE("/pipe/:pipeid", svc.DeletePipe) // delete pipe
 
 		//-----------------------------------------------------------------
 		// build
-		v1group.POST("/job/:jobid/build", svc.PostBuild)            // trigger build
-		v1group.PATCH("/job/:jobid/build/:buildid", svc.PatchBuild) // pause/continue/stop build
-		v1group.GET("/job/:jobid/build/:buildid", svc.GetBuild)     // get build
+		v1group.POST("/pipe/:pipeid/build", svc.PostBuild)            // trigger build
+		v1group.PATCH("/pipe/:pipeid/build/:buildid", svc.PatchBuild) // pause/continue/stop build
+		v1group.GET("/pipe/:pipeid/build/:buildid", svc.GetBuild)     // get build
 
 		//-----------------------------------------------------------------
 		// plugin
@@ -55,8 +55,8 @@ func Load(cfg *model.Config) http.Handler {
 
 		//-----------------------------------------------------------------
 		// log & message
-		v1group.GET("/job/:jobid/build/:buildid/log/:logid", svc.GetLog)  // get whole build / single step log
-		v1group.GET("/job/:jobid/build/:buildid/message", svc.GetMessage) // allow build step send message to master
+		v1group.GET("/pipe/:pipeid/build/:buildid/log/:logid", svc.GetLog)  // get whole build / single step log
+		v1group.GET("/pipe/:pipeid/build/:buildid/message", svc.GetMessage) // allow build step send message to master
 
 		//-----------------------------------------------------------------
 		// hook

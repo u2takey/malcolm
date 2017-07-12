@@ -16,8 +16,8 @@ type Trigger interface {
 
 type Build struct {
 	ID              bson.ObjectId `bson:"_id"`
-	JobID           bson.ObjectId `bson:"jobid" index:"index"`
-	JobName         string        `bson:"jobsname,omitempty"`
+	PipeID          bson.ObjectId `bson:"pipeid" index:"index"`
+	PipeName        string        `bson:"pipename,omitempty"`
 	Trigger         Trigger       `bson:"trigger,omitempty"`
 	Title           string        `bson:"title,omitempty"`
 	Description     string        `bson:"description,omitempty"`
@@ -52,7 +52,7 @@ type WorkStep struct {
 	Finished    time.Time    `bson:"finished"`
 	Message     []byte       `bson:"message,omitempty"`
 	Error       string       `bson:"error,omitempty"`
-	Config      *WorkConfig  `json:"-" bson:"-"`
+	Config      *Task        `json:"-" bson:"-"`
 	K8sjob      *batchv1.Job `bson:"-"`
 }
 

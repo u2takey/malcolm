@@ -18,7 +18,7 @@ type Collections struct {
 	Build  mgoutil.Collection `coll:"build"`
 	Log    mgoutil.Collection `coll:"log"`
 	Plugin mgoutil.Collection `coll:"plugin"`
-	Job    mgoutil.Collection `coll:"job"`
+	Pipe   mgoutil.Collection `coll:"pipe"`
 }
 
 func New(cfg *mgoutil.Config) (s *Store) {
@@ -40,6 +40,6 @@ func New(cfg *mgoutil.Config) (s *Store) {
 	s.Cols.Build.EnsureIndexes()
 	s.Cols.Log.EnsureIndexes()
 	s.Cols.Plugin.EnsureIndexes()
-	s.Cols.Job.EnsureIndexes()
+	s.Cols.Pipe.EnsureIndexes()
 	return
 }

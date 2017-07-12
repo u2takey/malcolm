@@ -11,11 +11,15 @@ import (
 	mgoutil "github.com/arlert/malcolm/utils/mongo"
 )
 
+// ---------------------------------------------------------------------------
+// server config
 type Config struct {
 	MgoCfg   mgoutil.Config
 	KubeAddr string
 }
 
+// ---------------------------------------------------------------------------
+// user config
 type ManualTriggerConfig struct {
 	Options []Option
 }
@@ -24,43 +28,25 @@ type TriggerConfig struct {
 	TriggerType string
 }
 
-// JobConfig represent pipeline config
-// JobConfig contains metadata and workconfig
-type JobConfig struct {
+// PipeConfig represent pipeline config
+type PipeConfig struct {
 	ID              bson.ObjectId   `bson:"_id,omitempty"`
 	Name            string          `bson:"name,omitempty"`
 	Description     string          `bson:"description,omitempty"`
 	ConcurrentBuild bool            `bson:"concurrentBuild"`
 	Trigger         []TriggerConfig `bson:"trigger,omitempty"`
-	Scm             []WorkConfig    `bson:"scm,omitempty"`
-	PreBuild        []WorkConfig    `bson:"preBuild,omitempty"`
-	Build           []WorkConfig    `bson:"build,omitempty"`
-	AfterBuild      []WorkConfig    `bson:"afterBuild,omitempty"`
-	Notify          []WorkConfig    `bson:"notify,omitempty"`
-	Service         []WorkConfig    `bson:"service,omitempty"`
+	Tasks           []Task          `bson:"pipeline,omitempty"`
+	Service         Task            `bson:"service,omitempty"`
 	Created         time.Time       `bson:"created"`
 	Updated         time.Time       `bson:"udated"`
-	// Publish         []WorkConfig    `json:"publish"`
 }
 
-func (job *JobConfig) Valid() error {
+func (pipe *PipeConfig) Valid() error {
 	msg := []string{}
-	workconfigs := map[string][]WorkConfig{
-		"scm":        job.Scm,
-		"prebuild":   job.PreBuild,
-		"build":      job.Build,
-		"afterbuild": job.AfterBuild,
-		"notify":     job.Notify,
-		"service":    job.Service,
-	}
-
-	for key, val := range workconfigs {
-		for index, work := range val {
-			work.Type = key // add type
-			err := work.Valid()
-			if err != nil {
-				msg = append(msg, fmt.Sprintf("error in config: %s %s/%d ", work.Title, key, index))
-			}
+	for _, task := range pipe.Tasks {
+		err := task.Valid()
+		if err != nil {
+			msg = append(msg, fmt.Sprintf("error in config: %s / %s : [%s] ", task.Title, task.Type, task.Plugin))
 		}
 	}
 	if len(msg) > 0 {
@@ -70,9 +56,8 @@ func (job *JobConfig) Valid() error {
 	}
 }
 
-// WorkConfig represent pipeline step config
-// WorkConfig contains running data which will be convert into Work
-type WorkConfig struct {
+// Task represent pipeline step config
+type Task struct {
 	Title       string            `bson:"title,omitempty"`
 	Type        string            `bson:"type,omitempty"`
 	Plugin      string            `bson:"plugin,omitempty"`
@@ -80,30 +65,11 @@ type WorkConfig struct {
 	Command     []string          `bson:"command,omitempty"`
 	Args        []string          `bson:"args,omitempty"`
 	PullPolicy  string            `bson:"pullPolicy,omitempty"`
-	// use secret or configmap
-	CredentialsName string `bson:"credentialsName,omitempty"`
-	CredentialsPath string `bson:"credentialsPath,omitempty"`
-
-	// -- auto set if needed --
-	// Resources ResourceRequirements `json:"resources,omitempty" `
-	// VolumeMounts []VolumeMount `json:"volumeMounts,omitempty"`
-	// Lifecycle       *Lifecycle `json:"lifecycle,omitempty"`
-	// WorkingDir      string     `json:"workingDir,omitempty"`
-
-	// -- not used ---
-	// SecurityContext *SecurityContext `json:"securityContext,omitempty"`
-	// Stdin bool `json:"stdin,omitempty" `
-	// StdinOnce bool `json:"stdinOnce,omitempty" `
-	// TTY bool `json:"tty,omitempty" `
-	// TerminationMessagePath string `json:"terminationMessagePath,omitempty" `
-	// TerminationMessagePolicy TerminationMessagePolicy `json:"terminationMessagePolicy,omitempty"`
-	// ReadinessProbe *Probe `json:"readinessProbe,omitempty" `
-	// LivenessProbe *Probe `json:"livenessProbe,omitempty" `
-	// EnvFrom        []EnvFromSource     `json:"envFrom,omitempty"`
-	// Ports []ContainerPort `json:"ports,omitempty"`
+	// key -> path
+	Credentials map[string]string `bson:"credentials,omitempty"`
 }
 
-func (w *WorkConfig) Valid() error {
+func (w *Task) Valid() error {
 	if w.Plugin == "" {
 		return errors.New("pluginPath cannot be empty")
 	}

@@ -3,7 +3,17 @@ package model
 import (
 	"time"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"labix.org/v2/mgo/bson"
+)
+
+var (
+	PluginTypeScm     = "scm"
+	PluginTypeBuild   = "build"
+	PluginTypeNotify  = "notify"
+	PluginTypePublish = "publish"
+
+	AvailablePluginTypes = sets.NewString(PluginTypeScm, PluginTypeBuild, PluginTypeNotify, PluginTypePublish)
 )
 
 // save into database as json
