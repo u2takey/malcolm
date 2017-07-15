@@ -8,12 +8,11 @@ import (
 )
 
 var (
-	PluginTypeScm     = "scm"
-	PluginTypeBuild   = "build"
-	PluginTypeNotify  = "notify"
-	PluginTypePublish = "publish"
+	PluginTypeScm        = "scm"
+	PluginTypeBuild      = "build"
+	PluginTypeAfterBuild = "afterbuild"
 
-	AvailablePluginTypes = sets.NewString(PluginTypeScm, PluginTypeBuild, PluginTypeNotify, PluginTypePublish)
+	AvailablePluginTypes = sets.NewString(PluginTypeScm, PluginTypeBuild, PluginTypeAfterBuild)
 )
 
 // save into database as json

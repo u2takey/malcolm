@@ -42,20 +42,23 @@ func Load(cfg *model.Config) http.Handler {
 
 		//-----------------------------------------------------------------
 		// build
-		v1group.POST("/pipe/:pipeid/build", svc.PostBuild)            // trigger build
-		v1group.PATCH("/pipe/:pipeid/build/:buildid", svc.PatchBuild) // pause/continue/stop build
-		v1group.GET("/pipe/:pipeid/build/:buildid", svc.GetBuild)     // get build
+		v1group.POST("/pipe/:pipeid/build", svc.PostBuild) // trigger build
+		v1group.PATCH("/pipe/:pipeid/build/:buildid", svc.PatchBuild)
+		v1group.PATCH("/pipe/:pipeid/build/:buildid/workno/:workno", svc.PatchBuild) // pause/continue/stop build
+		v1group.GET("/pipe/:pipeid/build/:buildid", svc.GetBuild)                    // get build
 
 		//-----------------------------------------------------------------
 		// plugin
-		v1group.POST("/plugin", svc.PostPlugin)                 // create build
-		v1group.PATCH("/plugin/:identifier", svc.PatchPlugin)   // update build
-		v1group.GET("/plugin/:identifier", svc.GetPlugin)       // get build
-		v1group.DELETE("/plugin/:identifier", svc.DeletePlugin) // delete build
+		v1group.POST("/plugin", svc.PostPlugin)               // create build
+		v1group.PATCH("/plugin/:pluginid", svc.PatchPlugin)   // update build
+		v1group.GET("/plugin/:pluginid", svc.GetPlugin)       // get build
+		v1group.DELETE("/plugin/:pluginid", svc.DeletePlugin) // delete build
 
 		//-----------------------------------------------------------------
 		// log & message
-		v1group.GET("/pipe/:pipeid/build/:buildid/log/:logid", svc.GetLog)  // get whole build / single step log
+		v1group.GET("/pipe/:pipeid/build/:buildid/log", svc.GetLog)
+		v1group.GET("/pipe/:pipeid/build/:buildid/log/workno/:workno", svc.GetLog) // get whole build / single step log
+		v1group.GET("/pipe/:pipeid/build/:buildid/workno/:workno/message", svc.GetMessage)
 		v1group.GET("/pipe/:pipeid/build/:buildid/message", svc.GetMessage) // allow build step send message to master
 
 		//-----------------------------------------------------------------

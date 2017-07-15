@@ -1,16 +1,25 @@
 # malcolm
-Continuous Delivery platform running on kubernetes
+Continuous Integration / Delivery platform running on kubernetes.
 
+Malcolm is designed as a general job pipeline, and a ci/cd platform with simple plugin systems. It's aim is to be a lightweight "jenkins" running on k8s.
 
-# RoadMap
-
-## Job / Build 
-- use sql or just store in k8s?
-- store logs in db or just retrieve logs with k8s client?
-- job model, job metadata and build config.
-- build model, need work or task model(sigle build can be concurrent tasks with many work)?
-
-## Project / User / Role
+## RoadMap
+- datamodel : done
+- concept verify : done
+- pipe api 
+- build api
+- plugin api
+- logs api
+- message api
+- trigger : manual
+- trigger : webhook
+- trigger : cron
+- workspace
+- variables inject / export
+- formal plugins
+- concurrent / matrix build
+- service support
+- volumn support
 
 
 

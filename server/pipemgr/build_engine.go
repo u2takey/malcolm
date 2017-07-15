@@ -8,21 +8,14 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	// "k8s.io/apimachinery/pkg/runtime"
-	// "k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	batchv1 "k8s.io/client-go/pkg/apis/batch/v1"
-	"k8s.io/client-go/rest"
 
 	"github.com/arlert/malcolm/model"
 )
 
 const (
-	defaultQPS   = 1e6
-	defaultBurst = 1e6
-
-	defaultNameSpace = "malcolm" // #todo ->param
-	defaultTimeout   = 60 * time.Minute
+	defaultTimeout = 60 * time.Minute
 )
 
 type Engine struct {
@@ -31,23 +24,6 @@ type Engine struct {
 
 func NewEngine(client *kubernetes.Clientset) *Engine {
 	return &Engine{client: client}
-}
-
-func CreateK8sClientByConfig(cfg *rest.Config) (*kubernetes.Clientset, error) {
-	if cfg.QPS == 0 {
-		cfg.QPS = defaultQPS
-	}
-	if cfg.Burst == 0 {
-		cfg.Burst = defaultBurst
-	}
-	if cfg.ContentType == "" {
-		cfg.ContentType = "application/vnd.kubernetes.protobuf"
-	}
-	client, err := kubernetes.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
 }
 
 func getlabel(job *batchv1.Job) string {
@@ -60,7 +36,7 @@ func getlabel(job *batchv1.Job) string {
 
 func (e *Engine) RunSyncJobch(work *model.WorkStep, msg chan<- *meassge) {
 	logrus.Debug("RunSyncJobch")
-	job, err := e.client.Jobs(defaultNameSpace).Create(work.K8sjob)
+	job, err := e.client.Jobs(model.DefaultNameSpace).Create(work.K8sjob)
 	_ = job
 	logrus.Debugf("create:%+v", work.K8sjob.Spec.Template.Spec.Containers)
 	if err != nil {
@@ -75,7 +51,7 @@ func (e *Engine) RunSyncJobch(work *model.WorkStep, msg chan<- *meassge) {
 		LabelSelector:  getlabel(work.K8sjob),
 		TimeoutSeconds: &timeout,
 	}
-	watcher, err := e.client.Jobs(defaultNameSpace).Watch(opts)
+	watcher, err := e.client.Jobs(model.DefaultNameSpace).Watch(opts)
 	if err != nil {
 		msg <- &meassge{
 			err: err,

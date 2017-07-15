@@ -67,11 +67,11 @@ func (m *PipeMgr) RemovePipe(c context.Context, pipeid string) {
 	}
 }
 
-func (m *PipeMgr) RunPipe(c context.Context, pipeid string) (err error) {
+func (m *PipeMgr) RunPipe(c context.Context, pipeid string) (build *model.Build, err error) {
 	m.pipelock.RLock()
 	defer m.pipelock.RUnlock()
 	if pipe, ok := m.pipes[pipeid]; ok {
-		err = m.runPipe(c, pipe, make(chan bool))
+		build, err = m.runPipe(c, pipe, make(chan bool))
 	} else {
 		req.Entry(c).Infof("RunPipe pipe  %s warning : notexsit \n", pipeid)
 		err = errors.New("Pipe not exsit")
@@ -79,10 +79,14 @@ func (m *PipeMgr) RunPipe(c context.Context, pipeid string) (err error) {
 	return
 }
 
-func (m *PipeMgr) runPipe(c context.Context, pipe *model.PipeConfig, cancel <-chan bool) (err error) {
+func (m *PipeMgr) runPipe(c context.Context, pipe *model.PipeConfig, cancel <-chan bool) (build *model.Build, err error) {
 	if pipe, ok := m.pipes[pipe.ID.Hex()]; ok {
 		template := &buildtemplate{}
-		build := template.ConfigToBuild(pipe)
+		build, err = template.ConfigToBuild(pipe)
+		if err != nil {
+			req.Entry(c).Warning("error in ConfigToBuild", err)
+			return nil, err
+		}
 		go func() {
 			pipe := NewPipeline(m.engine, &build.Works[0])
 			pipe.Exec()
@@ -103,7 +107,7 @@ func (m *PipeMgr) runPipe(c context.Context, pipe *model.PipeConfig, cancel <-ch
 					logrus.Debug("timeout")
 					return
 				case <-pipe.Step():
-					logrus.Debugf("finish : %s : %s  ", pipe.Curwork().Config.Title, pipe.Curwork().Config.Plugin)
+					logrus.Debugf("finish : %s : %s  ", pipe.Curwork().Config.Title, pipe.Curwork().Config.Title)
 					if pipe.Curwork().Status == "fail" {
 						pipe.Skip()
 					} else {
@@ -116,7 +120,7 @@ func (m *PipeMgr) runPipe(c context.Context, pipe *model.PipeConfig, cancel <-ch
 		}()
 	} else {
 		req.Entry(c).Infof("RunPipe pipe  %s warning : notexsit \n", pipe.ID.Hex())
-		return errors.New("Pipe not exsit")
+		return nil, errors.New("Pipe not exsit")
 	}
 	return
 }

@@ -30,23 +30,34 @@ type TriggerConfig struct {
 
 // PipeConfig represent pipeline config
 type PipeConfig struct {
-	ID              bson.ObjectId   `bson:"_id,omitempty"`
-	Name            string          `bson:"name,omitempty"`
-	Description     string          `bson:"description,omitempty"`
-	ConcurrentBuild bool            `bson:"concurrentBuild"`
-	Trigger         []TriggerConfig `bson:"trigger,omitempty"`
-	Tasks           []Task          `bson:"pipeline,omitempty"`
-	Service         Task            `bson:"service,omitempty"`
-	Created         time.Time       `bson:"created"`
-	Updated         time.Time       `bson:"udated"`
+	ID          bson.ObjectId   `bson:"_id,omitempty"`
+	Title       string          `bson:"title,omitempty"`
+	Description string          `bson:"description,omitempty"`
+	Trigger     []TriggerConfig `bson:"trigger,omitempty"`
+	TaskGroups  []TaskGroup     `bson:"taskgroups,omitempty"`
+	Services    []Task          `bson:"services,omitempty"`
+	Matrix      MatrixEnv       `bson:"matrix,omitempty"`
+	Created     time.Time       `bson:"created"`
+	Updated     time.Time       `bson:"updated"`
 }
+
+// taskgroup -> job -> pod -> onestep
+type TaskGroup struct {
+	Title      string `bson:"title,omitempty"`
+	Tasks      []Task `bson:"tasks,omitempty"`
+	Concurrent []Task `bson:"concurrent,omitempty"`
+}
+
+type MatrixEnv map[string][]string
 
 func (pipe *PipeConfig) Valid() error {
 	msg := []string{}
-	for _, task := range pipe.Tasks {
-		err := task.Valid()
-		if err != nil {
-			msg = append(msg, fmt.Sprintf("error in config: %s / %s : [%s] ", task.Title, task.Type, task.Plugin))
+	for _, group := range pipe.TaskGroups {
+		for _, task := range group.Tasks {
+			err := task.Valid()
+			if err != nil {
+				msg = append(msg, fmt.Sprintf("error in config: %s / %s : [%s] ", group.Title, task.Title, task.Plugin))
+			}
 		}
 	}
 	if len(msg) > 0 {
@@ -56,15 +67,15 @@ func (pipe *PipeConfig) Valid() error {
 	}
 }
 
-// Task represent pipeline step config
+// task -> single container
 type Task struct {
 	Title       string            `bson:"title,omitempty"`
-	Type        string            `bson:"type,omitempty"`
 	Plugin      string            `bson:"plugin,omitempty"`
 	Environment map[string]string `bson:"environment,omitempty"` // use-> Options or Environment Options -> Environment
 	Command     []string          `bson:"command,omitempty"`
 	Args        []string          `bson:"args,omitempty"`
 	PullPolicy  string            `bson:"pullPolicy,omitempty"`
+	Ports       []int             `bson:"port,omitempty"` // for service
 	// key -> path
 	Credentials map[string]string `bson:"credentials,omitempty"`
 }

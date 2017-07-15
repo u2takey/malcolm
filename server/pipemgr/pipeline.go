@@ -94,7 +94,7 @@ func (p *Pipeline) Stop() {
 }
 
 func (p *Pipeline) next() {
-	logrus.Debugf("next : %s : %s  ", p.Curwork().Config.Title, p.Curwork().Config.Plugin)
+	logrus.Debugf("next : %s : %s  ", p.Curwork().Config.Title, p.Curwork().Config.Title)
 	if p.Finished() {
 		p.done <- signal{}
 	} else {
