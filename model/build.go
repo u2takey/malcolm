@@ -17,7 +17,6 @@ type Trigger interface {
 type Build struct {
 	ID              bson.ObjectId `bson:"_id"`
 	PipeID          bson.ObjectId `bson:"pipeid" index:"index"`
-	PipeName        string        `bson:"pipename,omitempty"`
 	Trigger         Trigger       `bson:"trigger,omitempty"`
 	Title           string        `bson:"title,omitempty"`
 	Description     string        `bson:"description,omitempty"`
@@ -34,6 +33,7 @@ type Build struct {
 }
 
 type Work struct {
+	WorkNo      int         `bson:"workno"`
 	Title       string      `bson:"title,omitempty"`
 	Description string      `bson:"description,omitempty"`
 	Status      string      `bson:"status,omitempty"`
@@ -45,26 +45,27 @@ type Work struct {
 }
 
 type WorkStep struct {
-	Title       string       `bson:"title,omitempty"`
-	Description string       `bson:"description,omitempty"`
-	Status      string       `bson:"status,omitempty"`
-	Started     time.Time    `bson:"started"`
-	Finished    time.Time    `bson:"finished"`
-	Message     []byte       `bson:"message,omitempty"`
-	Error       string       `bson:"error,omitempty"`
-	Config      *Task        `json:"-" bson:"-"`
-	K8sjob      *batchv1.Job `bson:"-"`
+	StepNo   int          `bson:"stepno"`
+	Title    string       `bson:"title,omitempty"`
+	Status   string       `bson:"status,omitempty"`
+	Started  time.Time    `bson:"started"`
+	Finished time.Time    `bson:"finished"`
+	Message  []byte       `bson:"message,omitempty"`
+	Error    string       `bson:"error,omitempty"`
+	Config   *TaskGroup   `json:"-" bson:"-"`
+	K8sjob   *batchv1.Job `json:"job,omitempty" bson:"job,omitempty"`
 }
 
-type Log struct {
-	ID          bson.ObjectId `bson:"_id"`
-	BuildID     int64         `bson:"buildid" index:"index"`
-	Title       string        `bson:"title,omitempty"`
-	Description string        `bson:"description,omitempty"`
-	Step        string        `bson:"step"`
-	Data        []byte        `bson:"data,omitempty"`
-	Created     time.Time     `bson:"created"`
-}
+// log will not be saved into db
+// type Log struct {
+// 	ID          bson.ObjectId `bson:"_id"`
+// 	BuildID     int64         `bson:"buildid" index:"index"`
+// 	Title       string        `bson:"title,omitempty"`
+// 	Description string        `bson:"description,omitempty"`
+// 	Step        string        `bson:"step"`
+// 	Data        []byte        `bson:"data,omitempty"`
+// 	Created     time.Time     `bson:"created"`
+// }
 
 // Constraint represent step constraint between steps
 // type Constraint struct {

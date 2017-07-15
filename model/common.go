@@ -17,3 +17,9 @@ const (
 	StatusPaused  = "paused"
 	StatusError   = "error"
 )
+
+const (
+	DefaultNameSpace = "malcolm" // #todo ->param
+	PodTypeJob       = "jobpod"
+	PodTypeService   = "servicepod"
+)

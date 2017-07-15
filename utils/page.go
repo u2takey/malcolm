@@ -13,7 +13,7 @@ const (
 	DefaultFirstPage    = 1
 )
 
-// !!! first page: 1
+// first page: 1
 func GetPaginationParams(c *gin.Context, maxPageSize int) (page, pageSize int) {
 	pagestr := c.DefaultQuery("page", DefaultFirstPageStr)
 	page, err := strconv.Atoi(pagestr)
