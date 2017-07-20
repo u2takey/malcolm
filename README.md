@@ -6,7 +6,7 @@ Malcolm is designed as a general job pipeline, and a ci/cd platform with simple 
 ## RoadMap
 - datamodel : done
 - concept verify : done
-- pipe api 
+- pipe api : done
 - build api
 - plugin api
 - logs api
