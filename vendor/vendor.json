@@ -23,6 +23,12 @@
 			"revisionTime": "2017-01-11T21:52:18Z"
 		},
 		{
+			"checksumSHA1": "JRqoKE5pnJdcWvuBRiujKB/qO1Y=",
+			"path": "github.com/arlert/malcolm-ui/dist",
+			"revision": "547d1fa010cc4f1822bbeb951a455d7d9b5adb6f",
+			"revisionTime": "2017-07-16T11:03:15Z"
+		},
+		{
 			"checksumSHA1": "butr+Orbf1fd1hcLqNXYwUDAjcI=",
 			"path": "github.com/coreos/go-semver/semver",
 			"revision": "9474efc580562cce8f761659fbce31b6feb8ce88",
@@ -48,6 +54,18 @@
 			"path": "github.com/docker/distribution/reference",
 			"revision": "df46f7f13b3da19b90b8b4f0d18b8adc6fbf28dc",
 			"revisionTime": "2017-07-07T20:27:35Z"
+		},
+		{
+			"checksumSHA1": "GG/Mc0jDWyDDhmTijHWOzd3YqRw=",
+			"path": "github.com/drone-ui/dist",
+			"revision": "e66df33b4620917a2e7b59760887cc3eed543664",
+			"revisionTime": "2016-10-24T22:21:04Z"
+		},
+		{
+			"checksumSHA1": "bGdOim32+2dyKoQEtwW1PNwcdBc=",
+			"path": "github.com/elazarl/go-bindata-assetfs",
+			"revision": "9a6736ed45b44bf3835afeebb3034b57ed329f3e",
+			"revisionTime": "2016-08-22T20:44:01Z"
 		},
 		{
 			"checksumSHA1": "95WQb+qcV7gHpUvZymh7TssLh1Q=",
@@ -80,6 +98,12 @@
 		{
 			"checksumSHA1": "Nd2DhWdYIG/VuG/OjXkUQcP0UE0=",
 			"path": "github.com/gin-gonic/contrib/ginrus",
+			"revision": "4d2dccc9a4541014fec054e483cc76609b97fb16",
+			"revisionTime": "2017-01-18T07:21:49Z"
+		},
+		{
+			"checksumSHA1": "xJnBpChUm4Oeyt2QSCqYpStnkTk=",
+			"path": "github.com/gin-gonic/contrib/static",
 			"revision": "4d2dccc9a4541014fec054e483cc76609b97fb16",
 			"revisionTime": "2017-01-18T07:21:49Z"
 		},
@@ -1050,6 +1074,18 @@
 			"revisionTime": "2017-07-07T20:27:35Z"
 		},
 		{
+			"checksumSHA1": "3RHtDlI12Otdaelb03KsVEdMXks=",
+			"path": "k8s.io/kubernetes/pkg/util/flushwriter",
+			"revision": "bde8578d9675129b7a2aa08f1b825ec6cc0f3420",
+			"revisionTime": "2017-02-11T07:47:09Z"
+		},
+		{
+			"checksumSHA1": "uEfZfBhDJD7rEL6/QA/0Ew3tLrg=",
+			"path": "k8s.io/kubernetes/pkg/util/sets",
+			"revision": "bde8578d9675129b7a2aa08f1b825ec6cc0f3420",
+			"revisionTime": "2017-02-11T07:47:09Z"
+		},
+		{
 			"checksumSHA1": "BH1nN56Y/nJF4Ea7Z2R0s0UT6Jg=",
 			"path": "labix.org/v2/mgo",
 			"revision": ""
@@ -1060,5 +1096,5 @@
 			"revision": ""
 		}
 	],
-	"rootPath": "github.com/u2takey/malcolm"
+	"rootPath": "github.com/arlert/malcolm"
 }

@@ -31,6 +31,12 @@ func (s *Service) PatchBuild(c *gin.Context) {
 	c.String(200, "pong")
 }
 
+func (s *Service) GetBuildInQueue(c *gin.Context) {
+	req.Entry(c).Debug("GetBuildInQueue")
+	builds := s.pipem.Queue()
+	R(c, builds)
+}
+
 // get build
 func (s *Service) GetBuild(c *gin.Context) {
 	req.Entry(c).Debug("GetBuild")

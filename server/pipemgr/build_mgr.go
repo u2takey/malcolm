@@ -16,22 +16,52 @@ import (
 )
 
 type PipeMgr struct {
-	pipelock sync.RWMutex
-	pipes    map[string]*model.PipeConfig
-	store    *store.Store
-	engine   *Engine
+	pipelock  sync.RWMutex
+	pipes     map[string]*model.PipeConfig
+	store     *store.Store
+	queue     map[string]*model.Build
+	queuelock sync.RWMutex
+	engine    *Engine
 }
 
 func NewPipeMgr(st *store.Store, eng *Engine) (j *PipeMgr) {
 	j = &PipeMgr{
 		store:  st,
 		engine: eng,
+		pipes:  make(map[string]*model.PipeConfig, 0),
+		queue:  make(map[string]*model.Build, 0),
 	}
 	err := j.ListPipe()
 	if err != nil {
 		logrus.Fatalln("PipeMgr.list error -", err)
 	}
 	return j
+}
+
+func (m *PipeMgr) AddInQueue(build *model.Build) {
+	m.queuelock.Lock()
+	defer m.queuelock.Unlock()
+	m.queue[build.ID.Hex()] = build
+}
+
+func (m *PipeMgr) RemoveQueue(build *model.Build) {
+	m.queuelock.Lock()
+	defer m.queuelock.Unlock()
+	delete(m.queue, build.ID.Hex())
+}
+
+func (m *PipeMgr) Queue() (res []*model.Build) {
+	m.queuelock.RLock()
+	defer m.queuelock.RUnlock()
+	for _, val := range m.queue {
+		res = append(res, val)
+	}
+	return
+}
+
+func (m *PipeMgr) SyncStore(build *model.Build) {
+	sel := bson.M{"_id": build.ID}
+	m.store.Cols.Build.Update(sel, build)
 }
 
 func (m *PipeMgr) ListPipe() (err error) {
@@ -88,6 +118,11 @@ func (m *PipeMgr) runPipe(c context.Context, pipe *model.PipeConfig, cancel <-ch
 			return nil, err
 		}
 		go func() {
+			build.Status = model.StatusSuccess
+			build.Started = time.Now()
+			m.AddInQueue(build)
+			m.SyncStore(build)
+
 			pipe := NewPipeline(m.engine, &build.Works[0])
 			pipe.Exec()
 
@@ -96,24 +131,40 @@ func (m *PipeMgr) runPipe(c context.Context, pipe *model.PipeConfig, cancel <-ch
 			for {
 				select {
 				case <-pipe.Done():
+					build.Status = model.StatusSuccess
+					build.Finished = time.Now()
+					m.RemoveQueue(build)
+					m.SyncStore(build)
 					logrus.Debug("done")
 					return
 				case <-cancel:
 					pipe.Stop()
+					build.Status = model.StatusKilled
+					m.RemoveQueue(build)
+					m.SyncStore(build)
 					logrus.Debug("cancel")
 					return
 				case <-timeout:
 					pipe.Stop()
+					build.Status = model.StatusFailure
+					m.RemoveQueue(build)
+					m.SyncStore(build)
 					logrus.Debug("timeout")
 					return
 				case <-pipe.Step():
 					logrus.Debugf("finish : %s : %s  ", pipe.Curwork().Config.Title, pipe.Curwork().Config.Title)
+					pipe.Curwork().Finished = time.Now()
+					m.SyncStore(build)
 					if pipe.Curwork().Status == "fail" {
 						pipe.Skip()
 					} else {
 						pipe.Exec()
 					}
 				case meassge := <-pipe.Msg():
+					if meassge.err != nil {
+						pipe.Curwork().Status = model.StatusError
+						m.SyncStore(build)
+					}
 					logrus.Debugf("meassge:%s error: %s", meassge.data, meassge.err)
 				}
 			}

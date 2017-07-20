@@ -1,12 +1,13 @@
 package model
 
 import (
+	"time"
+
 	batchv1 "k8s.io/client-go/pkg/apis/batch/v1"
 	"labix.org/v2/mgo/bson"
-	"time"
 )
 
-// Trigger Represent trigger method to start a build
+// ManualTrigger ...: Trigger Represent trigger method to start a build
 type ManualTrigger struct {
 	TriggerParam map[string]string // for a trigger
 }

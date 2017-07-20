@@ -5,11 +5,13 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 
 	"github.com/arlert/malcolm/model"
 	"github.com/arlert/malcolm/server/middleware/header"
 	"github.com/arlert/malcolm/server/service"
+	"github.com/arlert/malcolm/utils"
 	_ "github.com/arlert/malcolm/utils/loghook"
 	"github.com/arlert/malcolm/utils/reqlog"
 )
@@ -23,13 +25,17 @@ func Load(cfg *model.Config) http.Handler {
 	e.Use(gin.Recovery())
 
 	e.Use(header.NoCache)
-	e.Use(header.Options)
+	e.Use(header.Secure)
 	e.Use(header.Version)
 	e.Use(reqlog.ReqLoggerMiddleware(logrus.New(), time.RFC3339, true))
 
 	svc := service.New(cfg)
+	//svc := &service.Service{}
 
 	e.GET("ping", svc.GetPing)
+
+	e.Use(static.Serve("/", utils.Frontend("build")))
+
 	v1group := e.Group("/v1")
 	{
 		//-----------------------------------------------------------------
@@ -42,6 +48,7 @@ func Load(cfg *model.Config) http.Handler {
 
 		//-----------------------------------------------------------------
 		// build
+		v1group.POST("/build/queue", svc.GetBuildInQueue)  // trigger build
 		v1group.POST("/pipe/:pipeid/build", svc.PostBuild) // trigger build
 		v1group.PATCH("/pipe/:pipeid/build/:buildid", svc.PatchBuild)
 		v1group.PATCH("/pipe/:pipeid/build/:buildid/workno/:workno", svc.PatchBuild) // pause/continue/stop build

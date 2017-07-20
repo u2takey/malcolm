@@ -64,6 +64,7 @@ func (s *Service) GetPipe(c *gin.Context) {
 		sel = bson.M{}
 	} else if !bson.IsObjectIdHex(pipeid) {
 		E(c, ErrInvalidParam.WithMessage("pipeid not valid"))
+		return
 	} else {
 		sel = bson.M{"_id": bson.ObjectIdHex(pipeid)}
 	}
