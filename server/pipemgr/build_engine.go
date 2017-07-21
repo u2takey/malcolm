@@ -18,22 +18,17 @@ const (
 	defaultTimeout = 60 * time.Minute
 )
 
+// Engine is for running job
 type Engine struct {
 	client *kubernetes.Clientset
 }
 
+// NewEngine init new engine with client
 func NewEngine(client *kubernetes.Clientset) *Engine {
 	return &Engine{client: client}
 }
 
-func getlabel(job *batchv1.Job) string {
-	labels := []string{}
-	for k, v := range job.ObjectMeta.Labels {
-		labels = append(labels, fmt.Sprintf("%s=%s", k, v))
-	}
-	return strings.Join(labels, ",")
-}
-
+// RunSyncJobch run a job sync with message and cancel channel
 func (e *Engine) RunSyncJobch(work *model.WorkStep, msg chan<- *meassge) {
 	logrus.Debug("RunSyncJobch")
 	job, err := e.client.Jobs(model.DefaultNameSpace).Create(work.K8sjob)
@@ -58,6 +53,7 @@ func (e *Engine) RunSyncJobch(work *model.WorkStep, msg chan<- *meassge) {
 		}
 		return
 	}
+	defer watcher.Stop()
 
 	for {
 		select {
@@ -96,4 +92,12 @@ func (e *Engine) RunSyncJobch(work *model.WorkStep, msg chan<- *meassge) {
 			return
 		}
 	}
+}
+
+func getlabel(job *batchv1.Job) string {
+	labels := []string{}
+	for k, v := range job.ObjectMeta.Labels {
+		labels = append(labels, fmt.Sprintf("%s=%s", k, v))
+	}
+	return strings.Join(labels, ",")
 }

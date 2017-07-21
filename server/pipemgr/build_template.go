@@ -24,7 +24,6 @@ func (t *buildtemplate) ConfigToBuild(pipe *model.PipeConfig) (*model.Build, err
 		PipeID:      pipe.ID,
 		Title:       pipe.Title,
 		Description: pipe.Description,
-		Created:     time.Now(),
 	}
 
 	work := model.Work{
@@ -54,7 +53,7 @@ func (t *buildtemplate) ConfigToBuild(pipe *model.PipeConfig) (*model.Build, err
 		})
 	}
 	// single work for now
-	build.Works = append(build.Works, work)
+	build.Works = append(build.Works, &work)
 	return build, nil
 }
 

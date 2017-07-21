@@ -32,7 +32,7 @@ func (s *Service) GetLog(c *gin.Context) {
 	}
 	c.Header("Transfer-Encoding", "chunked")
 	writer := flushwriter.Wrap(c.Writer)
-	err = s.logmgr.GetLog(&build.Works[0], writer)
+	err = s.logmgr.GetLog(build.Works[0], writer)
 	if err != nil {
 		c.AbortWithError(400, err)
 	}

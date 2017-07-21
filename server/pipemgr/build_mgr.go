@@ -16,12 +16,13 @@ import (
 )
 
 type PipeMgr struct {
-	pipelock  sync.RWMutex
-	pipes     map[string]*model.PipeConfig
-	store     *store.Store
-	queue     map[string]*model.Build
-	queuelock sync.RWMutex
-	engine    *Engine
+	pipelock        sync.RWMutex
+	pipes           map[string]*model.PipeConfig
+	store           *store.Store
+	queue           map[string]*model.Build
+	queuelock       sync.RWMutex
+	buildupdatelock sync.RWMutex
+	engine          *Engine
 }
 
 func NewPipeMgr(st *store.Store, eng *Engine) (j *PipeMgr) {
@@ -117,61 +118,114 @@ func (m *PipeMgr) runPipe(c context.Context, pipe *model.PipeConfig, cancel <-ch
 			req.Entry(c).Warning("error in ConfigToBuild", err)
 			return nil, err
 		}
-		go func() {
-			build.Status = model.StatusSuccess
-			build.Started = time.Now()
-			m.AddInQueue(build)
-			m.SyncStore(build)
 
-			pipe := NewPipeline(m.engine, &build.Works[0])
-			pipe.Exec()
+		m.UpdateBuildStatus(build)
 
-			timeout := time.After(time.Duration(60) * time.Minute)
+		for _, work := range build.Works {
+			go func(work *model.Work) {
+				pipe := NewPipeline(m.engine, work)
 
-			for {
-				select {
-				case <-pipe.Done():
-					build.Status = model.StatusSuccess
-					build.Finished = time.Now()
-					m.RemoveQueue(build)
-					m.SyncStore(build)
-					logrus.Debug("done")
-					return
-				case <-cancel:
-					pipe.Stop()
-					build.Status = model.StatusKilled
-					m.RemoveQueue(build)
-					m.SyncStore(build)
-					logrus.Debug("cancel")
-					return
-				case <-timeout:
-					pipe.Stop()
-					build.Status = model.StatusFailure
-					m.RemoveQueue(build)
-					m.SyncStore(build)
-					logrus.Debug("timeout")
-					return
-				case <-pipe.Step():
-					logrus.Debugf("finish : %s : %s  ", pipe.Curwork().Config.Title, pipe.Curwork().Config.Title)
-					pipe.Curwork().Finished = time.Now()
-					m.SyncStore(build)
-					if pipe.Curwork().Status == "fail" {
-						pipe.Skip()
-					} else {
+				pipe.Exec()
+				m.InitWorkStatus(work)
+				m.UpdateBuildStatus(build)
+
+				timeout := time.After(time.Duration(60) * time.Minute)
+
+				for {
+					select {
+					case <-pipe.Done():
+						work.Status.State = model.WorkStateComplete
+						work.Finished = time.Now()
+						m.UpdateBuildStatus(build)
+						logrus.Debug("done")
+						return
+					case <-cancel:
+						pipe.Stop()
+						work.Status.StateDetail = model.StateCompleteDetailStopped
+						work.Status.StateReason = "canceled"
+						m.UpdateBuildStatus(build)
+						logrus.Debug("cancel")
+						return
+					case <-timeout:
+						pipe.Stop()
+						work.Status.StateDetail = model.StateCompleteDetailFailed
+						work.Status.StateReason = "timeout"
+						m.UpdateBuildStatus(build)
+						logrus.Debug("timeout")
+						return
+					case <-pipe.StepStart():
+						curstep := pipe.CurStep()
+						if curstep != nil {
+							curstep.Started = time.Now()
+							curstep.Status.State = model.StepStateRunning
+						}
+						m.UpdateBuildStatus(build)
+					case <-pipe.StepDone():
+						curstep := pipe.CurStep()
+						if curstep != nil {
+							curstep.Finished = time.Now()
+							curstep.Status.State = model.StepStateComplete
+						}
 						pipe.Exec()
+						m.UpdateBuildStatus(build)
+					case meassge := <-pipe.StepMsg():
+						curstep := pipe.CurStep()
+						if curstep != nil {
+							if meassge.err != nil {
+								curstep.Status.Message += "error : " + meassge.err.Error() + "/n"
+							}
+							curstep.Status.Message += "data : " + meassge.data + "/n"
+						}
+						m.UpdateBuildStatus(build)
 					}
-				case meassge := <-pipe.Msg():
-					if meassge.err != nil {
-						pipe.Curwork().Status = model.StatusError
-						m.SyncStore(build)
-					}
-					logrus.Debugf("meassge:%s error: %s", meassge.data, meassge.err)
 				}
-			}
-		}()
+			}(work)
+		}
 	} else {
 		req.Entry(c).Infof("RunPipe pipe  %s warning : notexsit \n", pipe.ID.Hex())
 		return nil, errors.New("Pipe not exsit")
 	}
 	return
+}
+
+func (m *PipeMgr) UpdateBuildStatus(build *model.Build) {
+	m.buildupdatelock.Lock()
+	defer m.buildupdatelock.Unlock()
+	if time.Now().Sub(build.Updated) < time.Millisecond*500 {
+		return
+	}
+	buildStatus := model.BuildStatusRunning
+	var temp model.WorkState
+	for _, work := range build.Works {
+		if temp == "" {
+			temp = work.Status.State
+		} else if temp != work.Status.State {
+			temp = ""
+			break
+		}
+	}
+	if temp != "" {
+		//#todo should be a function
+		buildStatus = model.BuildStatus(temp)
+	}
+	laststatus := build.Status
+	build.Status = buildStatus
+	if build.Status == model.BuildStatusComplete {
+		build.Finished = time.Now()
+		m.RemoveQueue(build)
+	}
+	if build.Status == model.BuildStatusRunning && laststatus == "" {
+		build.Started = time.Now()
+		m.AddInQueue(build)
+	}
+	build.Updated = time.Now()
+	m.SyncStore(build)
+}
+
+func (m *PipeMgr) InitWorkStatus(work *model.Work) {
+	work.Started = time.Now()
+	work.Status.State = model.WorkStateRunning
+	for _, step := range work.Steps {
+		step.Status.State = model.StepStatePending
+	}
 }

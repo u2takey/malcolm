@@ -17,22 +17,24 @@ type meassge struct {
 }
 
 type Pipeline struct {
-	index  int
-	work   *model.Work
-	msg    chan (*meassge)
-	step   chan (signal)
-	done   chan (signal)
-	engine *Engine
+	index     int
+	work      *model.Work
+	stepmsg   chan (*meassge)
+	stepstart chan (signal)
+	stepdone  chan (signal)
+	done      chan (signal)
+	engine    *Engine
 }
 
 func NewPipeline(eng *Engine, work *model.Work) *Pipeline {
 
 	pipeline := Pipeline{
-		engine: eng,
-		work:   work,
-		msg:    make(chan *meassge, DefaultBufferSize),
-		step:   make(chan signal),
-		done:   make(chan signal),
+		engine:    eng,
+		work:      work,
+		stepmsg:   make(chan *meassge, DefaultBufferSize),
+		stepstart: make(chan signal),
+		stepdone:  make(chan signal),
+		done:      make(chan signal),
 	}
 	return &pipeline
 }
@@ -41,17 +43,28 @@ func (p *Pipeline) Done() <-chan signal {
 	return p.done
 }
 
-func (p *Pipeline) Msg() <-chan (*meassge) {
-	return p.msg
+func (p *Pipeline) StepMsg() <-chan (*meassge) {
+	return p.stepmsg
 }
 
-func (p *Pipeline) Step() <-chan signal {
-	return p.step
+func (p *Pipeline) StepStart() <-chan signal {
+	return p.stepstart
 }
 
-func (p *Pipeline) Curwork() *model.WorkStep {
+func (p *Pipeline) StepDone() <-chan signal {
+	return p.stepdone
+}
+
+func (p *Pipeline) CurStep() *model.WorkStep {
 	if p.index < len(p.work.Steps) && p.index >= 0 {
 		return p.work.Steps[p.index]
+	}
+	return nil
+}
+
+func (p *Pipeline) NextStep() *model.WorkStep {
+	if p.index < len(p.work.Steps)-1 {
+		return p.work.Steps[p.index+1]
 	}
 	return nil
 }
@@ -63,10 +76,12 @@ func (p *Pipeline) Finished() bool {
 // Exec executes the current step.
 func (p *Pipeline) Exec() {
 	go func() {
-		curwork := p.Curwork()
-		if curwork != nil {
-			p.exec(curwork)
+		curstep := p.CurStep()
+		p.stepstart <- signal{}
+		if curstep != nil {
+			p.exec(curstep)
 		}
+		p.stepdone <- signal{}
 		p.next()
 	}()
 }
@@ -94,15 +109,14 @@ func (p *Pipeline) Stop() {
 }
 
 func (p *Pipeline) next() {
-	logrus.Debugf("next : %s : %s  ", p.Curwork().Config.Title, p.Curwork().Config.Title)
+	logrus.Debugf("next : %s ", p.CurStep().Config.Title)
 	if p.Finished() {
 		p.done <- signal{}
 	} else {
-		p.index += 1
-		p.step <- signal{}
+		p.index++
 	}
 }
 
 func (p *Pipeline) exec(work *model.WorkStep) {
-	p.engine.RunSyncJobch(work, p.msg)
+	p.engine.RunSyncJobch(work, p.stepmsg)
 }

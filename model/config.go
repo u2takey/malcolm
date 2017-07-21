@@ -11,15 +11,13 @@ import (
 	mgoutil "github.com/arlert/malcolm/utils/mongo"
 )
 
-// ---------------------------------------------------------------------------
-// server config
+// Config is server config
 type Config struct {
 	MgoCfg   mgoutil.Config
 	KubeAddr string
 }
 
-// ---------------------------------------------------------------------------
-// user config
+// ManualTriggerConfig config
 type ManualTriggerConfig struct {
 	Options []Option
 }
@@ -41,15 +39,27 @@ type PipeConfig struct {
 	Updated     time.Time       `bson:"updated"`
 }
 
-// taskgroup -> job -> pod -> onestep
+// TaskGroup -> job -> pod -> onestep
 type TaskGroup struct {
-	Title      string `bson:"title,omitempty"`
-	Tasks      []Task `bson:"tasks,omitempty"`
-	Concurrent []Task `bson:"concurrent,omitempty"`
+	Title         string        `bson:"title,omitempty"`
+	Label         string        `bson:"title,omitempty"`
+	Tasks         []Task        `bson:"tasks,omitempty"`
+	Concurrent    []Task        `bson:"concurrent,omitempty"`
+	Prerequisites Prerequisites `bson:"prerequisites,omitempty"`
 }
 
+// Prerequisites is tells when taskgroup should running
+type Prerequisites struct {
+	MatchExprs []string `bson:"matchexprs,omitempty"`
+	// matchexpr : step.env match val
+	RequireExpr string `bson:"requireexpr,omitempty"`
+	// requireexpr : both/any/none
+}
+
+// MatrixEnv is for matrix work
 type MatrixEnv map[string][]string
 
+// Valid chech config param valid
 func (pipe *PipeConfig) Valid() error {
 	msg := []string{}
 	for _, group := range pipe.TaskGroups {
@@ -62,12 +72,11 @@ func (pipe *PipeConfig) Valid() error {
 	}
 	if len(msg) > 0 {
 		return errors.New(strings.Join(msg, "\n"))
-	} else {
-		return nil
 	}
+	return nil
 }
 
-// task -> single container
+// Task -> single container
 type Task struct {
 	Title       string            `bson:"title,omitempty"`
 	Plugin      string            `bson:"plugin,omitempty"`
@@ -75,11 +84,13 @@ type Task struct {
 	Command     []string          `bson:"command,omitempty"`
 	Args        []string          `bson:"args,omitempty"`
 	PullPolicy  string            `bson:"pullPolicy,omitempty"`
-	Ports       []int             `bson:"port,omitempty"` // for service
+	Ports       []int             `bson:"port,omitempty"`    // for service
+	Timeout     int               `bson:"timeout,omitempty"` // timeout in minutes with default value
 	// key -> path
 	Credentials map[string]string `bson:"credentials,omitempty"`
 }
 
+// Valid check task param valid
 func (w *Task) Valid() error {
 	if w.Plugin == "" {
 		return errors.New("pluginPath cannot be empty")
