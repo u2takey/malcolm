@@ -21,8 +21,8 @@ func NewLogMgr(client *kubernetes.Clientset) *LogMgr {
 	return logMgr
 }
 
-func (l *LogMgr) GetLog(work *model.Work, writer io.Writer) error {
-	for step_index, step := range work.Steps {
+func (l *LogMgr) GetLog(build *model.Build, writer io.Writer) error {
+	for step_index, step := range build.Steps {
 		if step_index != 0 {
 			time.Sleep(5 * 1e9)
 		}

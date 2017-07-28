@@ -7,7 +7,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"labix.org/v2/mgo"
+	"gopkg.in/mgo.v2"
 )
 
 func Dail(host, mode string, syncTimeoutInS int64, direct bool) (session *mgo.Session, err error) {

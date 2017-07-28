@@ -23,8 +23,8 @@ var (
 type Service struct {
 	config *model.Config
 	store  *store.Store
-	pipem  *pipemgr.PipeMgr
-	engine *pipemgr.Engine
+	pipem  pipemgr.PipeManagerInterface
+	engine pipemgr.BuildEngineInterface
 	logmgr *logmgr.LogMgr
 }
 
@@ -55,7 +55,8 @@ func New(cfg *model.Config) *Service {
 		engine: pipemgr.NewEngine(client),
 		logmgr: logmgr.NewLogMgr(client),
 	}
-	svc.pipem = pipemgr.NewPipeMgr(svc.store, svc.engine)
+	svc.pipem = pipemgr.NewPipeManager(svc.store, svc.engine)
+	svc.pipem.Run()
 	return svc
 }
 

@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"k8s.io/kubernetes/pkg/util/sets"
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var (
