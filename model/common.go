@@ -1,34 +1,35 @@
 package model
 
-type BuildStatus string
+type BuildAction string
 
 const (
-	BuildStatusRunning  BuildStatus = "running"
-	BuildStatusComplete BuildStatus = "complete"
-	BuildStatusPaused   BuildStatus = "paused"
+	ActionStart  BuildAction = "start"
+	ActionPause  BuildAction = "pause"
+	ActionResume BuildAction = "resume"
+	ActionStop   BuildAction = "stop"
 )
 
-type WorkStatus struct {
-	State       WorkState
+type BuildStatus struct {
+	State       BuildState
 	StateDetail StateDetail
-	StateReason string
 	Message     string
 }
 
 type StepStatus struct {
 	State       StepState
 	StateDetail StateDetail
-	StateReason string
 	Message     string
 }
 
 // WorkState is state of work
-type WorkState string
+type BuildState string
 
 const (
-	WorkStateRunning  WorkState = "running"
-	WorkStatePaused   WorkState = "paused"
-	WorkStateComplete WorkState = "complete"
+	BuildStatePending  BuildState = "pending"
+	BuildStateRunning  BuildState = "running"
+	BuildStatePaused   BuildState = "paused"
+	BuildStatePausing  BuildState = "pausing"
+	BuildStateComplete BuildState = "complete"
 )
 
 // StepState is state of a build step
@@ -43,10 +44,10 @@ const (
 type StateDetail string
 
 const (
-	StateCompleteDetailFailed  StateDetail = "failed"
-	StateCompleteDetailStopped StateDetail = "stopped"
-	StateCompleteDetailSkipped StateDetail = "skipped"
-	StateCompleteDetailSuccess StateDetail = "success"
+	StateCompleteDetailFailed   StateDetail = "failed"
+	StateCompleteDetailCanceled StateDetail = "canceled"
+	StateCompleteDetailSkipped  StateDetail = "skipped"
+	StateCompleteDetailSuccess  StateDetail = "success"
 )
 
 const (

@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"labix.org/v2/mgo"
+	"gopkg.in/mgo.v2"
 )
 
 // ------------------------------------------------------------------------

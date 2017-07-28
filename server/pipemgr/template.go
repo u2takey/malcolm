@@ -7,6 +7,7 @@ metadata:
   name: {{ .Meta.BuildID }}-{{ .Meta.TaskID }}
   namespace: {{ .Meta.Namespace }}
   labels:
+    malcolm: malcolm-job
     pipe: {{ .Meta.PipeID }}
     build: {{ .Meta.BuildID }}
     task: {{ .Meta.TaskID }}
@@ -21,8 +22,9 @@ spec:
         pipe: {{ .Meta.PipeID }}
         build: {{ .Meta.BuildID }}
         task: {{ .Meta.TaskID }}
+        malcolm: malcolm-job
     spec:
-{{ range $Index, $Task := .TaskGroup.Tasks }}
+{{ range $Index, $Task := .TaskGroup.PreTasks }}
       initContainers:
       - name: {{ $Index }}-{{ $Task.Title | str2title }}
         image: {{ $Task.Plugin }}
@@ -48,7 +50,7 @@ spec:
               key: data  
   {{ end }}          
 {{ end }}
-{{ range $Index, $Task := .TaskGroup.Concurrent }}
+{{ range $Index, $Task := .TaskGroup.Tasks }}
       containers:
       - name: {{ $Index }}-{{ $Task.Title | str2title }}
         image: {{ $Task.Plugin }}
@@ -88,6 +90,7 @@ metadata:
     pipe: {{ .Meta.PipeID }}
     build: {{ .Meta.BuildID }}
     task: {{ .Meta.TaskID }}
+    malcolm: malcolm-service
 spec:
   replicas: 1
   template:

@@ -3,8 +3,8 @@ package model
 import (
 	"time"
 
+	"gopkg.in/mgo.v2/bson"
 	batchv1 "k8s.io/client-go/pkg/apis/batch/v1"
-	"labix.org/v2/mgo/bson"
 )
 
 // ManualTrigger ...: Trigger Represent trigger method to start a build
@@ -15,7 +15,7 @@ type ManualTrigger struct {
 type Trigger interface {
 }
 
-// Build is a running/runned instance of pipe
+// Build is a running/runned instance of pipeline
 type Build struct {
 	ID          bson.ObjectId `bson:"_id"`
 	PipeID      bson.ObjectId `bson:"pipeid" index:"index"`
@@ -24,31 +24,23 @@ type Build struct {
 	Description string        `bson:"description,omitempty"`
 	Project     string        `bson:"project,omitempty" index:"index"`
 	Status      BuildStatus   `bson:"status,omitempty" index:"index"`
+	Created     time.Time     `bson:"created"`
 	Started     time.Time     `bson:"started"`
 	Finished    time.Time     `bson:"finished"`
 	Updated     time.Time     `bson:"updated"`
-	Works       []*Work       `bson:"works,omitempty"`
+	CurrentStep int           `bson:"currentStep,omitempty"`
+	Steps       []*WorkStep   `bson:"steps,omitempty"`
 	Author      string        `bson:"author,omitempty"`
+	Dirty       bool          `bson:"-" json:"-"`
 }
 
-// Work is a instance of build, a single build may trigger multiple work
-type Work struct {
-	WorkNo      int         `bson:"workno"`
-	Title       string      `bson:"title,omitempty"`
-	Description string      `bson:"description,omitempty"`
-	Status      WorkStatus  `bson:"status,omitempty"`
-	Started     time.Time   `bson:"started"`
-	Finished    time.Time   `bson:"finished"`
-	Steps       []*WorkStep `bson:"steps,omitempty"`
-}
-
-// WorkStep is a step during a Work
+// WorkStep is a step during a Build
 type WorkStep struct {
-	StepNo   int          `bson:"stepno"`
 	Title    string       `bson:"title,omitempty"`
+	StepNo   int          `bson:"stepno,omitempty"`
 	Status   StepStatus   `bson:"status,omitempty"`
 	Started  time.Time    `bson:"started"`
 	Finished time.Time    `bson:"finished"`
-	Config   *TaskGroup   `json:"-" bson:"-"`
-	K8sjob   *batchv1.Job `json:"job,omitempty" bson:"job,omitempty"`
+	Config   *TaskGroup   `bson:"-" json:"-"`
+	K8sjob   *batchv1.Job `bson:"job,omitempty" json:"job,omitempty"`
 }

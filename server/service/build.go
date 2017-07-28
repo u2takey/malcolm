@@ -3,7 +3,7 @@ package service
 import (
 	"github.com/arlert/malcolm/model"
 	"github.com/gin-gonic/gin"
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/arlert/malcolm/utils"
 	req "github.com/arlert/malcolm/utils/reqlog"
@@ -16,7 +16,7 @@ func (s *Service) PostBuild(c *gin.Context) {
 	req.Entry(c).Debug("PostBuild")
 	pipeid := c.Param("pipeid")
 	ctx := req.Context(c)
-	build, err := s.pipem.RunPipe(ctx, pipeid)
+	build, err := s.pipem.BuildAction(ctx, "", pipeid, model.ActionStart)
 	if err != nil {
 		E(c, ErrInvalidParam.WithMessage(err.Error()))
 		return
@@ -28,12 +28,30 @@ func (s *Service) PostBuild(c *gin.Context) {
 // pause/continue/stop build
 func (s *Service) PatchBuild(c *gin.Context) {
 	req.Entry(c).Debug("PatchBuild")
-	c.String(200, "pong")
+	query := c.Query("action")
+	pipeid := c.Param("pipeid")
+	buildid := c.Param("buildid")
+	action := model.BuildAction(query)
+	ctx := req.Context(c)
+	if action == model.ActionPause || action == model.ActionResume || action == model.ActionStop {
+		build, err := s.pipem.BuildAction(ctx, buildid, pipeid, action)
+		if err != nil {
+			c.AbortWithError(400, err)
+		} else {
+			R(c, build)
+		}
+	} else {
+		c.AbortWithStatus(400)
+	}
 }
 
 func (s *Service) GetBuildInQueue(c *gin.Context) {
 	req.Entry(c).Debug("GetBuildInQueue")
-	builds := s.pipem.Queue()
+	ctx := req.Context(c)
+	builds, err := s.pipem.BuildQueue(ctx)
+	if err != nil {
+		req.Entry(c).Error(err)
+	}
 	R(c, builds)
 }
 
@@ -45,6 +63,7 @@ func (s *Service) GetBuild(c *gin.Context) {
 	page, size := utils.GetPaginationParams(c, 100)
 	sel := bson.M{}
 	builds := []model.Build{}
+	singleBuild := false
 	if !bson.IsObjectIdHex(pipeid) {
 		E(c, ErrInvalidParam.WithMessage("pipeid not valid"))
 		return
@@ -52,12 +71,17 @@ func (s *Service) GetBuild(c *gin.Context) {
 		sel["pipeid"] = bson.ObjectIdHex(pipeid)
 	}
 	if bson.IsObjectIdHex(buildid) {
+		singleBuild = true
 		sel["_id"] = bson.ObjectIdHex(buildid)
 	}
 	err := s.store.Cols.Build.Find(sel).Sort("-created").Skip((page - 1) * size).Limit(size).All(&builds)
-	if err != nil {
+	if err != nil || (singleBuild && len(builds) != 1) {
 		E(c, ErrDB)
 		return
 	}
-	R(c, builds)
+	if singleBuild {
+		R(c, builds[0])
+	} else {
+		R(c, builds)
+	}
 }

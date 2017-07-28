@@ -1,13 +1,14 @@
 package utils
 
 import (
-	"github.com/gin-gonic/gin"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 const (
-	DefaultPageSizeStr = "10"
-	DefaultPageSize    = 10
+	DefaultPageSizeStr = "100"
+	DefaultPageSize    = 100
 
 	DefaultFirstPageStr = "1"
 	DefaultFirstPage    = 1

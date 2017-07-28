@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/gin-gonic/gin"
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/arlert/malcolm/model"
 	req "github.com/arlert/malcolm/utils/reqlog"
@@ -26,13 +26,13 @@ func (s *Service) GetLog(c *gin.Context) {
 	sel["_id"] = bson.ObjectIdHex(buildid)
 
 	err := s.store.Cols.Build.Find(sel).One(build)
-	if err != nil || len(build.Works) == 0 {
+	if err != nil || len(build.Steps) == 0 {
 		E(c, ErrDB)
 		return
 	}
 	c.Header("Transfer-Encoding", "chunked")
 	writer := flushwriter.Wrap(c.Writer)
-	err = s.logmgr.GetLog(build.Works[0], writer)
+	err = s.logmgr.GetLog(build, writer)
 	if err != nil {
 		c.AbortWithError(400, err)
 	}

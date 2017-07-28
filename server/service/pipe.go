@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/arlert/malcolm/model"
 	"github.com/arlert/malcolm/utils"
@@ -29,7 +29,8 @@ func (s *Service) PostPipe(c *gin.Context) {
 		E(c, ErrDB.WithMessage(err.Error()))
 		return
 	}
-	s.pipem.AddPipe(req.Context(c), pipe)
+
+	s.pipem.PipelineAdd(req.Context(c), pipe)
 	R(c, pipe)
 }
 
@@ -48,7 +49,7 @@ func (s *Service) PatchPipe(c *gin.Context) {
 		E(c, ErrDB.WithMessage(err.Error()))
 		return
 	}
-	s.pipem.AddPipe(req.Context(c), pipe)
+	s.pipem.PipelineAdd(req.Context(c), pipe)
 	R(c, pipe)
 }
 
@@ -59,7 +60,7 @@ func (s *Service) GetPipe(c *gin.Context) {
 	page, size := utils.GetPaginationParams(c, 100)
 
 	var sel bson.M
-	pipes := []model.PipeConfig{}
+	pipes := []model.Pipeline{}
 	if pipeid == "" {
 		sel = bson.M{}
 	} else if !bson.IsObjectIdHex(pipeid) {
@@ -91,15 +92,15 @@ func (s *Service) DeletePipe(c *gin.Context) {
 		E(c, ErrDB.WithMessage(err.Error()))
 		return
 	}
-	s.pipem.RemovePipe(req.Context(c), pipeid)
+	s.pipem.PipelineRemove(req.Context(c), pipeid)
 	R(c, gin.H{})
 }
 
 //-----------------------------------------------------------------
 // BindPipe
-func BindValidPipe(c *gin.Context) (pipe *model.PipeConfig, err error) {
-	pipe = &model.PipeConfig{}
+func BindValidPipe(c *gin.Context) (pipe *model.Pipeline, err error) {
+	pipe = &model.Pipeline{}
 	c.BindJSON(pipe)
-	err = pipe.Valid()
+	err = pipe.ValidAndSetDefault(model.DefaultBuildConfig)
 	return
 }
