@@ -18,6 +18,8 @@ import (
 type BuildEngineInterface interface {
 	RunStep(step *model.WorkStep) error
 	StopStep(step *model.WorkStep) error
+	SetupVolumn(volumn *api_v1.PersistentVolumeClaim) error
+	CleanupVolumn(volumn *api_v1.PersistentVolumeClaim) error
 	Start(event chan BuildEvent)
 	Shutdown()
 }
@@ -157,12 +159,12 @@ func (e *Engine) runOnce(podWatcher, jobWatcher watch.Interface, event chan Buil
 func (e *Engine) RunStep(step *model.WorkStep) error {
 	logrus.Debugln("RunStep", step.Title)
 	job, err := e.client.Jobs(model.DefaultNameSpace).Create(step.K8sjob)
-	//_ = job
+	_ = job
 	logrus.Debugf("create:%+v", step.K8sjob.Spec.Template.Spec.Containers)
 	if err != nil {
 		return err
 	}
-	step.K8sjob = job
+	//step.K8sjob = job
 	return nil
 }
 
@@ -179,4 +181,16 @@ func (e *Engine) StopStep(step *model.WorkStep) error {
 		step.K8sjob = job
 	}
 	return nil
+}
+
+// SetupVolumn create volumn
+func (e *Engine) SetupVolumn(volumn *api_v1.PersistentVolumeClaim) (err error) {
+	_, err = e.client.CoreV1().PersistentVolumeClaims(model.DefaultNameSpace).Create(volumn)
+	return
+}
+
+// CleanupVolumn delete volumn
+func (e *Engine) CleanupVolumn(volumn *api_v1.PersistentVolumeClaim) (err error) {
+	err = e.client.CoreV1().PersistentVolumeClaims(model.DefaultNameSpace).Delete(volumn.Name, nil)
+	return
 }
