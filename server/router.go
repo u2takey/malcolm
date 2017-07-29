@@ -5,11 +5,13 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 
 	"github.com/arlert/malcolm/model"
 	"github.com/arlert/malcolm/server/middleware/header"
 	"github.com/arlert/malcolm/server/service"
+	"github.com/arlert/malcolm/utils"
 	_ "github.com/arlert/malcolm/utils/loghook"
 	"github.com/arlert/malcolm/utils/reqlog"
 )
@@ -33,7 +35,7 @@ func Load(cfg *model.Config) http.Handler {
 
 	e.GET("ping", svc.GetPing)
 
-	//e.Use(static.Serve("/", utils.Frontend("build")))
+	e.Use(static.Serve("/", utils.Frontend("dist")))
 
 	v1group := e.Group("/v1")
 	{

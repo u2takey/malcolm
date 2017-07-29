@@ -1,6 +1,22 @@
 package pipemgr
 
+var VolumnTemplateDefault = `
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  namespace: {{ .Meta.Namespace }}
+  name: {{ .Meta.BuildID }}
+spec:
+  storageClassName: {{ .Pipe.StorageClass }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Pipe.StorageSize }}
+`
+
 var JobTemplateDefault = `
+{{ $data := . }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -75,8 +91,20 @@ spec:
               name: {{ $Val }}
               key: data  
   {{ end }}
+  {{ if $data.Pipe.StorageClass }}
+        volumeMounts:
+        - name: workspace
+          mountPath: {{ $data.Pipe.WorkSpace }}
+  {{ end }}
+        WorkingDir: {{ $data.Pipe.WorkSpace }}
 {{ end }}
       restartPolicy: Never
+{{ if .Pipe.StorageClass }}
+      volumes:
+      - name: workspace
+        persistentVolumeClaim:
+          claimName: {{ .Meta.BuildID  }}
+{{ end }}
 
 `
 
@@ -103,7 +131,7 @@ spec:
         task: {{ .Meta.TaskID }}
         type: {{ .Meta.Type }}
     spec:
-      containers:
+        containers:
       - name: {{ $Index }}-{{ Task.Title | str2title }}
         image: {{ $Task.Plugin }}
         imagePullPolicy: {{ .Task.PullPolicy }}

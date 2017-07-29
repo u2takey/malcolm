@@ -31,10 +31,13 @@ func TestTemplate(t *testing.T) {
 		}},
 	}}
 	pipe := &model.Pipeline{
-		ID:          bson.NewObjectId(),
-		Title:       "a pipe",
-		Description: "a pipe",
-		TaskGroups:  testtaskgroup,
+		ID:           bson.NewObjectId(),
+		Title:        "a pipe",
+		Description:  "a pipe",
+		TaskGroups:   testtaskgroup,
+		StorageClass: "ceph",
+		StorageSize:  "1Gi",
+		WorkSpace:    "/workspace",
 	}
 	tmpl := &buildtemplate{}
 	job, err := tmpl.ConfigToBuild(pipe)

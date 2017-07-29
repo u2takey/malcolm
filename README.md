@@ -3,18 +3,22 @@ Continuous Integration / Delivery platform running on kubernetes.
 
 Malcolm is designed as a general job pipeline, and a ci/cd platform with simple plugin systems. It's aim is to be a lightweight "jenkins" running on k8s.
 
+## Dependency
+kubernete cluster with storage class supported
+[malcolm ui](https://github.com/arlert/malcolm-ui): ui for malcolm
+
 ## RoadMap
 - datamodel : done
 - concept verify : done
 - pipe api : done
-- build api
-- build status / statistic
+- build api : done
+- build status / statistic : 50%
 - build constraint
 - build env inject / export
 - plugin api
 - logs api
 - message api
-- trigger : manual
+- trigger : manual : 80%
 - trigger : webhook
 - trigger : cron
 - workspace
@@ -22,7 +26,7 @@ Malcolm is designed as a general job pipeline, and a ci/cd platform with simple 
 - formal plugins
 - concurrent / matrix build
 - service support
-- volumn support
+- volumn support : done
 
 
 

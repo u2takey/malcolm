@@ -9,16 +9,19 @@ import (
 
 // Pipeline represent pipeline config
 type Pipeline struct {
-	ID          bson.ObjectId   `bson:"_id,omitempty"`
-	Title       string          `bson:"title,omitempty"`
-	Description string          `bson:"description,omitempty"`
-	Trigger     []TriggerConfig `bson:"trigger,omitempty"`
-	TaskGroups  []TaskGroup     `bson:"taskgroups,omitempty"`
-	Services    []Task          `bson:"services,omitempty"`
-	Matrix      MatrixEnv       `bson:"matrix,omitempty"`
-	Created     time.Time       `bson:"created"`
-	Updated     time.Time       `bson:"updated"`
-	Timeout     int             `bson:"timeout,omitempty"` // timeout in minutes with default value
+	ID           bson.ObjectId   `bson:"_id,omitempty"`
+	Title        string          `bson:"title,omitempty"`
+	Description  string          `bson:"description,omitempty"`
+	WorkSpace    string          `bson:"workspace,omitempty"`
+	StorageClass string          `bson:"storageClass,omitempty"`
+	StorageSize  string          `bson:"storageSize,omitempty"`
+	Trigger      []TriggerConfig `bson:"trigger,omitempty"`
+	TaskGroups   []TaskGroup     `bson:"taskgroups,omitempty"`
+	Services     []Task          `bson:"services,omitempty"`
+	Matrix       MatrixEnv       `bson:"matrix,omitempty"`
+	Created      time.Time       `bson:"created"`
+	Updated      time.Time       `bson:"updated"`
+	Timeout      int             `bson:"timeout,omitempty"` // timeout in minutes with default value
 }
 
 // TaskGroup -> job -> pod -> onestep
@@ -64,6 +67,12 @@ func (pipe *Pipeline) ValidAndSetDefault(config *GeneralBuildingConfig) (err err
 	for _, group := range pipe.TaskGroups {
 		err1 := group.ValidAndSetDefault(config)
 		err = WarpErrors(err, err1)
+	}
+	if pipe.WorkSpace == "" {
+		pipe.WorkSpace = config.WorkSpace
+	}
+	if pipe.StorageClass != "" && pipe.StorageSize == "" {
+		pipe.StorageSize = config.StorageSize
 	}
 	return
 }

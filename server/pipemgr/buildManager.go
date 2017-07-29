@@ -361,6 +361,20 @@ func (m *PipeManager) getBuild(c context.Context, pipe *model.Pipeline) (build *
 	return
 }
 
+func (m *PipeManager) buildSetup(c context.Context, build *model.Build) (err error) {
+	if build.Volumn != nil {
+		err = m.engine.SetupVolumn(build.Volumn)
+	}
+	return
+}
+
+func (m *PipeManager) buildCleanup(c context.Context, build *model.Build) (err error) {
+	if build.Volumn != nil {
+		err = m.engine.CleanupVolumn(build.Volumn)
+	}
+	return
+}
+
 // BuildAction receive build action
 func (m *PipeManager) BuildAction(c context.Context,
 	buildid, pipeid string, action model.BuildAction) (build *model.Build, err error) {
@@ -386,6 +400,10 @@ func (m *PipeManager) BuildAction(c context.Context,
 			return
 		}
 		build, err = m.getBuild(c, pipe)
+		if err != nil {
+			return
+		}
+		err = m.buildSetup(c, build)
 		if err != nil {
 			return
 		}
@@ -419,6 +437,7 @@ func (m *PipeManager) BuildAction(c context.Context,
 func (m *PipeManager) syncStatus() {
 	m.buildlock.Lock()
 	defer m.buildlock.Unlock()
+	c := context.Background()
 	temp := make([]*model.Build, 0)
 	for _, build := range m.builds {
 		if build.Dirty == true {
@@ -438,6 +457,10 @@ func (m *PipeManager) syncStatus() {
 	}
 
 	for _, build := range temp {
+		err := m.buildCleanup(c, build)
+		if err != nil {
+			logrus.Errorln("buildCleanup error ", err)
+		}
 		delete(m.builds, build.ID.Hex())
 	}
 }
