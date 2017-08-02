@@ -15,7 +15,6 @@ func WarpErrors(errs ...error) error {
 	}
 	if len(msg) > 0 {
 		return errors.New(strings.Join(msg, "\n"))
-	} else {
-		return nil
 	}
+	return nil
 }

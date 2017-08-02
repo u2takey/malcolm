@@ -8,14 +8,6 @@ import (
 	batchv1 "k8s.io/client-go/pkg/apis/batch/v1"
 )
 
-// ManualTrigger ...: Trigger Represent trigger method to start a build
-type ManualTrigger struct {
-	TriggerParam map[string]string // for a trigger
-}
-
-type Trigger interface {
-}
-
 // Build is a running/runned instance of pipeline
 type Build struct {
 	ID          bson.ObjectId             `bson:"_id"`
@@ -43,6 +35,19 @@ type WorkStep struct {
 	Status   StepStatus   `bson:"status,omitempty"`
 	Started  time.Time    `bson:"started"`
 	Finished time.Time    `bson:"finished"`
+	WorkEnv  WorkEnv      `bson:"workenv"`
 	Config   *TaskGroup   `bson:"-" json:"-"`
 	K8sjob   *batchv1.Job `bson:"job,omitempty" json:"job,omitempty"`
+}
+
+// Env Key
+const (
+	WorkEnvKey   string = "workenv"
+	PluginEnvKey string = "pluginenv"
+)
+
+// WorkEnv will be inject to step environment
+type WorkEnv struct {
+	Trigger    Trigger
+	PrevStatus StepStatus
 }

@@ -76,10 +76,11 @@ func (l *LogMgr) GetLog(build *model.Build, writer io.Writer) error {
 				continue
 			}
 			reader, err := req.Stream()
-			defer reader.Close()
 			if err != nil {
 				logrus.Debug("req.Stream error", err)
 				continue
+			} else {
+				defer reader.Close()
 			}
 			readers = append(readers, reader)
 		}

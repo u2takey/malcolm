@@ -2,6 +2,7 @@ package pipemgr
 
 import (
 	"bytes"
+	"encoding/json"
 	"html/template"
 	"strconv"
 	"unicode"
@@ -73,7 +74,8 @@ type templateData struct {
 }
 
 var templateFuncs = template.FuncMap{
-	"str2title": str2title,
+	"str2title":     str2title,
+	"interface2str": interface2str,
 }
 
 func str2title(in string) (out string) {
@@ -88,6 +90,18 @@ func str2title(in string) (out string) {
 			out += "-"
 		}
 	}
+	return
+}
+
+func interface2str(in interface{}) (out string) {
+	if out, ok := in.(string); ok {
+		return out
+	}
+	buf, err := json.Marshal(in)
+	if err != nil {
+		return "error"
+	}
+	out = string(buf)
 	return
 }
 

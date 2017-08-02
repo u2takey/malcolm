@@ -30,6 +30,7 @@ metadata:
 spec:
   completions: 1
   parallelism: 1
+  activeDeadlineSeconds: 3600
   template:
     metadata:
       name: {{ .TaskGroup.Title | str2title }}
@@ -55,14 +56,14 @@ spec:
   {{ end }}
         env:
   {{ range $Key, $Val := $Task.Environment }}
-        - name: {{ $Key }}
-          value: {{ $Val }}
+        - name: "{{ $Key }}"
+          value: "{{ $Val | interface2str }}"
   {{ end }} 
-  {{ range $Key, $Val := $Task.Environment }}
-        - name: {{ $Key }}
+  {{ range $Key, $Val := $Task.Credentials }}
+        - name: "{{ $Key }}"
           valueFrom:
             secretKeyRef:
-              name: {{ $Val }}
+              name: "{{ $Val }}"
               key: data  
   {{ end }}          
 {{ end }}
@@ -81,15 +82,19 @@ spec:
   {{ end }}
         env:
   {{ range $Key, $Val := $Task.Environment }}
-        - name: {{ $Key }}
-          value: {{ $Val }}
+        - name: "{{ $Key }}"
+          value: "{{ $Val | interface2str  }}"
   {{ end }}
-  {{ range $Key, $Val := $Task.Environment }}
-        - name: {{ $Key }}
+  {{ range $Key, $Val := $Task.Credentials }}
+        - name: "{{ $Key }}"
           valueFrom:
             secretKeyRef:
-              name: {{ $Val }}
+              name: "{{ $Val }}"
               key: data  
+  {{ end }}
+  {{ if $Task.Privileged }}
+        securityContext:
+          privileged: true
   {{ end }}
   {{ if $data.Pipe.StorageClass }}
         volumeMounts:
@@ -149,14 +154,14 @@ spec:
   {{ end }}
         env:
   {{ range $Key, $Val := .Task.Environment }}
-        - name: {{ $Key }}
-          value: {{ $Val }}
+        - name: "{{ $Key }}"
+          value: "{{ $Val | interface2str }}"
   {{ end }}
-  {{ range $Key, $Val := .Task.Environment }}
-        - name: {{ $Key }}
+  {{ range $Key, $Val := .Task.Credentials }}
+        - name: "{{ $Key }}"
           valueFrom:
             secretKeyRef:
-              name: {{ $Val }}
+              name: "{{ $Val }}"
               key: data  
   {{ end }}
 {{ end }}
