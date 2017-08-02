@@ -10,6 +10,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 
 	"github.com/arlert/malcolm/model"
+	"github.com/arlert/malcolm/server/cronmgr"
 	"github.com/arlert/malcolm/store"
 	// "github.com/arlert/malcolm/utils"
 	"fmt"
@@ -65,7 +66,8 @@ type PipeManager struct {
 	buildEvent   chan BuildEvent
 	controlEvent chan ControlEvent
 
-	engine BuildEngineInterface
+	engine  BuildEngineInterface
+	cronmgr cronmgr.Interface
 }
 
 // NewPipeManager init a Pipemanager
@@ -77,6 +79,7 @@ func NewPipeManager(st *store.Store, eng BuildEngineInterface) (m *PipeManager) 
 		builds:       make(map[string]*model.Build, 0),
 		buildEvent:   make(chan BuildEvent, 100),
 		controlEvent: make(chan ControlEvent, 100),
+		cronmgr:      cronmgr.New(),
 	}
 	return m
 }
@@ -93,6 +96,14 @@ func (m *PipeManager) Run() {
 	}
 	t := time.NewTicker(time.Second)
 	c := context.Background()
+
+	m.cronmgr.Start()
+	for _, pipe := range m.pipes {
+		err1 := m.cronmgr.UpInsert(pipe)
+		if err1 != nil {
+			logrus.Warningln("cronmgr.UpInsert error -", err1)
+		}
+	}
 
 	go m.engine.Start(m.buildEvent)
 
@@ -232,6 +243,16 @@ func (m *PipeManager) Run() {
 					build.Status.StateDetail = model.StateCompleteDetailCanceled
 					build.Finished = time.Now()
 				}
+			case pipeid := <-m.cronmgr.CronPipeChan():
+				go func() {
+					//#todo Trigger set to refractor
+					build, err := m.BuildAction(context.Background(), "", pipeid, model.ActionStart)
+					if err != nil {
+						logrus.Error("BuildAction Start error ", err)
+					} else {
+						build.Trigger = &model.CronTrigger{}
+					}
+				}()
 			case <-t.C:
 				m.syncStatus()
 			}
@@ -286,6 +307,10 @@ func (m *PipeManager) PipelineAdd(c context.Context, pipe *model.Pipeline) error
 	m.pipelock.Lock()
 	defer m.pipelock.Unlock()
 	m.pipes[pipe.ID.Hex()] = pipe
+	err := m.cronmgr.UpInsert(pipe)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -295,6 +320,7 @@ func (m *PipeManager) PipelineRemove(c context.Context, pipeid string) (err erro
 	defer m.pipelock.Unlock()
 	if _, ok := m.pipes[pipeid]; ok {
 		delete(m.pipes, pipeid)
+		m.cronmgr.Delete(pipeid)
 	} else {
 		err = errors.New("pipeline not found in cache")
 	}
@@ -442,7 +468,7 @@ func (m *PipeManager) syncStatus() {
 	for _, build := range m.builds {
 		if build.Dirty == true {
 			sel := bson.M{"_id": build.ID}
-			err := m.store.Cols.Build.Update(sel, build)
+			_, err := m.store.Cols.Build.Upsert(sel, build)
 			if err != nil {
 				logrus.Debug(err)
 			}

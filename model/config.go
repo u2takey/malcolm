@@ -10,11 +10,13 @@ type Config struct {
 	KubeAddr string
 }
 
+// Resource cpu/memory
 type Resource struct {
-	Cpu    string
+	CPU    string
 	Memory string
 }
 
+// DefaultBuildConfig is default building config
 var DefaultBuildConfig = &GeneralBuildingConfig{
 	Project:            DefaultNameSpace,
 	WorkTimeoutDefault: 60,
@@ -35,11 +37,4 @@ type GeneralBuildingConfig struct {
 	StorageSize          string
 }
 
-// ManualTriggerConfig config
-type ManualTriggerConfig struct {
-	Options []Option
-}
 
-type TriggerConfig struct {
-	TriggerType string
-}

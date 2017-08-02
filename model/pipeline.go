@@ -9,19 +9,19 @@ import (
 
 // Pipeline represent pipeline config
 type Pipeline struct {
-	ID           bson.ObjectId   `bson:"_id,omitempty"`
-	Title        string          `bson:"title,omitempty"`
-	Description  string          `bson:"description,omitempty"`
-	WorkSpace    string          `bson:"workspace,omitempty"`
-	StorageClass string          `bson:"storageClass,omitempty"`
-	StorageSize  string          `bson:"storageSize,omitempty"`
-	Trigger      []TriggerConfig `bson:"trigger,omitempty"`
-	TaskGroups   []TaskGroup     `bson:"taskgroups,omitempty"`
-	Services     []Task          `bson:"services,omitempty"`
-	Matrix       MatrixEnv       `bson:"matrix,omitempty"`
-	Created      time.Time       `bson:"created"`
-	Updated      time.Time       `bson:"updated"`
-	Timeout      int             `bson:"timeout,omitempty"` // timeout in minutes with default value
+	ID           bson.ObjectId `bson:"_id,omitempty"`
+	Title        string        `bson:"title,omitempty"`
+	Description  string        `bson:"description,omitempty"`
+	WorkSpace    string        `bson:"workspace,omitempty"`
+	StorageClass string        `bson:"storageClass,omitempty"`
+	StorageSize  string        `bson:"storageSize,omitempty"`
+	Trigger      TriggerConfig `bson:"trigger,omitempty"` // manual trigger default
+	TaskGroups   []TaskGroup   `bson:"taskgroups,omitempty"`
+	Services     []Task        `bson:"services,omitempty"`
+	Matrix       MatrixEnv     `bson:"matrix,omitempty"`
+	Created      time.Time     `bson:"created"`
+	Updated      time.Time     `bson:"updated"`
+	Timeout      int           `bson:"timeout,omitempty"` // timeout in minutes with default value
 }
 
 // TaskGroup -> job -> pod -> onestep
@@ -44,13 +44,14 @@ type Prerequisites struct {
 
 // Task -> single container
 type Task struct {
-	Title       string            `bson:"title,omitempty"`
-	Plugin      string            `bson:"plugin,omitempty"`
-	Environment map[string]string `bson:"environment,omitempty"` // use-> Options or Environment Options -> Environment
-	Command     []string          `bson:"command,omitempty"`
-	Args        []string          `bson:"args,omitempty"`
-	PullPolicy  string            `bson:"pullPolicy,omitempty"`
-	Ports       []int             `bson:"port,omitempty"` // for service
+	Title       string                 `bson:"title,omitempty"`
+	Plugin      string                 `bson:"plugin,omitempty"`
+	Environment map[string]interface{} `bson:"environment,omitempty"` // plugin config -> environment
+	Command     []string               `bson:"command,omitempty"`
+	Privileged  bool                   `bson:"privileged,omitempty"`
+	Args        []string               `bson:"args,omitempty"`
+	PullPolicy  string                 `bson:"pullPolicy,omitempty"`
+	Ports       []int                  `bson:"port,omitempty"` // for service
 	// Timeout     int               `bson:"timeout,omitempty"` // timeout in minutes with default value
 	// key -> path
 	Credentials map[string]string `bson:"credentials,omitempty"`
