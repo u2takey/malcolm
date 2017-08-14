@@ -30,14 +30,14 @@ type TaskGroup struct {
 	Label      string      `bson:"label,omitempty"`
 	PreTasks   []Task      `bson:"pretasks,omitempty"`
 	Tasks      []Task      `bson:"tasks,omitempty"`
-	Constraint *Constraint `bson:"Constraint,omitempty"`
+	Constraint *Constraint `bson:"constraint,omitempty"`
 	Timeout    int         `bson:"timeout,omitempty"` // timeout in minutes with default value
 }
 
 // Prerequisites is tells when taskgroup should running
 type Constraint struct {
-	MatchState                         // last step.statedetail match
-	MatchEnvs        map[string]string // step.env match val
+	MatchState       `bson:"matchState" json:"matchState"` // last step.statedetail match
+	MatchEnvs        map[string]string                     // step.env match val
 	MatchExpressions []LabelSelectorRequirement
 }
 
@@ -88,8 +88,9 @@ func (pipe *Pipeline) ValidAndSetDefault(config *GeneralBuildingConfig) (err err
 	if pipe.Timeout == 0 {
 		pipe.Timeout = config.WorkTimeoutDefault
 	}
-	for _, group := range pipe.TaskGroups {
-		err1 := group.ValidAndSetDefault(config)
+	for index, _ := range pipe.TaskGroups {
+		g := &pipe.TaskGroups[index]
+		err1 := g.ValidAndSetDefault(config)
 		err = WarpErrors(err, err1)
 	}
 	if pipe.WorkSpace == "" {
@@ -111,8 +112,9 @@ func (g *TaskGroup) ValidAndSetDefault(config *GeneralBuildingConfig) (err error
 			MatchState: config.ConstriantStateDefault,
 		}
 	}
-	for _, task := range g.Tasks {
-		err1 := task.ValidAndSetDefault(config)
+	for index, _ := range g.Tasks {
+		t := g.Tasks[index]
+		err1 := t.ValidAndSetDefault(config)
 		err = WarpErrors(err, err1)
 	}
 	return

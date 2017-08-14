@@ -252,7 +252,7 @@ next:
 		build.Finished = time.Now()
 		fail := false
 		for _, step := range build.Steps {
-			if step.Status.StateDetail == model.StateCompleteDetailSuccess {
+			if step.Status.StateDetail == model.StateCompleteDetailFailed {
 				build.Status.StateDetail = model.StateCompleteDetailFailed
 				fail = true
 				break
