@@ -136,10 +136,8 @@ func (m *PipeManager) Run() {
 					curstep.Status.StateDetail = model.StateCompleteDetailFailed
 					curstep.Finished = time.Now()
 					curstep.Status.Message = ev.data
-					// get error complete whole build
-					build.Status.State = model.BuildStateComplete
-					build.Finished = time.Now()
-					build.Status.StateDetail = model.StateCompleteDetailFailed
+					// get error goto nextstep
+					m.nextstep(build)
 				case eventStatusStart:
 					// update step status
 					curstep.Started = time.Now()
@@ -157,23 +155,8 @@ func (m *PipeManager) Run() {
 					curstep.Finished = time.Now()
 
 					// update build status -> goto next step
-					build.CurrentStep++
-					if build.CurrentStep >= len(build.Steps) {
-						// finished
-						build.Status.State = model.BuildStateComplete
-						build.Finished = time.Now()
-						build.Status.StateDetail = model.StateCompleteDetailSuccess
-					} else if build.Status.State == model.BuildStateRunning {
-						// not finish
-						err := m.engine.RunStep(build.Steps[build.CurrentStep])
-						if err != nil {
-							// run step fail -> complete whole build
-							build.Status.State = model.BuildStateComplete
-							build.Finished = time.Now()
-							build.Status.StateDetail = model.StateCompleteDetailFailed
-							build.Status.Message = err.Error()
-						}
-					} else if build.Status.State == model.BuildStatePausing {
+					m.nextstep(build)
+					if build.Status.State == model.BuildStatePausing {
 						build.Status.State = model.BuildStatePaused
 					}
 				case eventStatusDeleted:
@@ -258,6 +241,47 @@ func (m *PipeManager) Run() {
 			}
 		}
 	}()
+}
+
+func (m *PipeManager) nextstep(build *model.Build) {
+next:
+	build.CurrentStep++
+	if build.CurrentStep >= len(build.Steps) {
+		// finished
+		build.Status.State = model.BuildStateComplete
+		build.Finished = time.Now()
+		fail := false
+		for _, step := range build.Steps {
+			if step.Status.StateDetail == model.StateCompleteDetailSuccess {
+				build.Status.StateDetail = model.StateCompleteDetailFailed
+				fail = true
+				break
+			}
+		}
+		if !fail {
+			build.Status.StateDetail = model.StateCompleteDetailSuccess
+		}
+	} else if build.Status.State == model.BuildStateRunning {
+		nextstep := build.Steps[build.CurrentStep]
+		if !matchConstraint(build) {
+			nextstep.Status.State = model.StepStateComplete
+			nextstep.Finished = time.Now()
+			nextstep.Status.StateDetail = model.StateCompleteDetailSkipped
+			nextstep.Status.Message = "constraint not match : skipped"
+			goto next
+		}
+
+		// match and not finish
+		err := m.engine.RunStep(nextstep)
+		if err != nil {
+			// run step fail -> complete whole build
+			nextstep.Status.State = model.StepStateComplete
+			nextstep.Finished = time.Now()
+			nextstep.Status.StateDetail = model.StateCompleteDetailFailed
+			nextstep.Status.Message = err.Error()
+			goto next
+		}
+	}
 }
 
 // listPipe populate pipes from store to local cache

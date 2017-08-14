@@ -13,7 +13,7 @@ Malcolm is designed as a general job pipeline, and a ci/cd platform with simple 
 - pipe api : done
 - build api : done
 - build status / statistic : 50%
-- build constraint
+- build constraint : 50%
 - build env inject / export
 - plugin api
 - logs api
@@ -22,7 +22,6 @@ Malcolm is designed as a general job pipeline, and a ci/cd platform with simple 
 - trigger : webhook
 - trigger : cron : 90%
 - workspace
-- variables inject / export
 - formal plugins
 - concurrent / matrix build
 - service support
