@@ -26,21 +26,44 @@ type Pipeline struct {
 
 // TaskGroup -> job -> pod -> onestep
 type TaskGroup struct {
-	Title         string        `bson:"title,omitempty"`
-	Label         string        `bson:"label,omitempty"`
-	PreTasks      []Task        `bson:"pretasks,omitempty"`
-	Tasks         []Task        `bson:"tasks,omitempty"`
-	Prerequisites Prerequisites `bson:"prerequisites,omitempty"`
-	Timeout       int           `bson:"timeout,omitempty"` // timeout in minutes with default value
+	Title      string      `bson:"title,omitempty"`
+	Label      string      `bson:"label,omitempty"`
+	PreTasks   []Task      `bson:"pretasks,omitempty"`
+	Tasks      []Task      `bson:"tasks,omitempty"`
+	Constraint *Constraint `bson:"Constraint,omitempty"`
+	Timeout    int         `bson:"timeout,omitempty"` // timeout in minutes with default value
 }
 
 // Prerequisites is tells when taskgroup should running
-type Prerequisites struct {
-	MatchExprs []string `bson:"matchexprs,omitempty"`
-	// matchexpr : step.env match val
-	RequireExpr string `bson:"requireexpr,omitempty"`
-	// requireexpr : both/any/none
+type Constraint struct {
+	MatchState                         // last step.statedetail match
+	MatchEnvs        map[string]string // step.env match val
+	MatchExpressions []LabelSelectorRequirement
 }
+
+// MatchState :last step status
+type MatchState string
+
+const (
+	MatchStateFail    MatchState = "Fail"
+	MatchStateSuccess MatchState = "Success"
+	MatchStateAlways  MatchState = "Always"
+)
+
+type LabelSelectorRequirement struct {
+	Key      string
+	Operator LabelSelectorOperator
+	Values   []string
+}
+
+type LabelSelectorOperator string
+
+const (
+	LabelSelectorOpIn           LabelSelectorOperator = "In"
+	LabelSelectorOpNotIn        LabelSelectorOperator = "NotIn"
+	LabelSelectorOpExists       LabelSelectorOperator = "Exists"
+	LabelSelectorOpDoesNotExist LabelSelectorOperator = "DoesNotExist"
+)
 
 // Task -> single container
 type Task struct {
@@ -82,6 +105,11 @@ func (pipe *Pipeline) ValidAndSetDefault(config *GeneralBuildingConfig) (err err
 func (g *TaskGroup) ValidAndSetDefault(config *GeneralBuildingConfig) (err error) {
 	if g.Timeout == 0 {
 		g.Timeout = config.StepTimeoutDefault
+	}
+	if g.Constraint == nil {
+		g.Constraint = &Constraint{
+			MatchState: config.ConstriantStateDefault,
+		}
 	}
 	for _, task := range g.Tasks {
 		err1 := task.ValidAndSetDefault(config)

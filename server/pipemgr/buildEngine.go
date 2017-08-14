@@ -110,12 +110,22 @@ func (e *Engine) runOnce(podWatcher, jobWatcher watch.Interface, event chan Buil
 
 		switch ev.Type {
 		case watch.Added:
-			//if len(job.Status.Conditions) == 0 {
+
+			// add event canbe "initevent" not status:add
+			for _, cond := range job.Status.Conditions {
+				if cond.Type == batchv1.JobComplete {
+					event <- BuildEvent{
+						eventtype: eventStatusDone,
+						buildid:   job.Labels["build"],
+					}
+					return true
+				}
+			}
 			event <- BuildEvent{
 				eventtype: eventStatusStart,
 				buildid:   job.Labels["build"],
 			}
-			//}
+
 		case watch.Modified:
 			// complete
 			for _, cond := range job.Status.Conditions {

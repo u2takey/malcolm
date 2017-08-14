@@ -18,23 +18,23 @@ type Resource struct {
 
 // DefaultBuildConfig is default building config
 var DefaultBuildConfig = &GeneralBuildingConfig{
-	Project:            DefaultNameSpace,
-	WorkTimeoutDefault: 60,
-	StepTimeoutDefault: 60,
-	WorkSpace:          "/workspace",
-	StorageSize:        "1Gi",
+	Project:                DefaultNameSpace,
+	WorkTimeoutDefault:     60,
+	StepTimeoutDefault:     60,
+	ConstriantStateDefault: MatchStateSuccess,
+	WorkSpace:              "/workspace",
+	StorageSize:            "1Gi",
 }
 
 // GeneralBuildingConfig is project based building config
 type GeneralBuildingConfig struct {
-	Project              string
-	WorkTimeoutDefault   int // in minute
-	StepTimeoutDefault   int // in minute
-	ResourceLimitDefault Resource
-	ResourceLimitRequest Resource
-	WorkSpace            string
-	StorageClass         string
-	StorageSize          string
+	Project                string
+	WorkTimeoutDefault     int // in minute
+	StepTimeoutDefault     int // in minute
+	ConstriantStateDefault MatchState
+	ResourceLimitDefault   Resource
+	ResourceLimitRequest   Resource
+	WorkSpace              string
+	StorageClass           string
+	StorageSize            string
 }
-
-

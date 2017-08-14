@@ -27,6 +27,7 @@ type Plugin struct {
 	Description string        `bson:"description,omitempty"`
 	Version     string        `bson:"version"`
 	Path        string        `bson:"url"`
+	Constraint  *Constraint   `bson:"constraint"`            // default constraint
 	Schema      interface{}   `bson:"schema,omitempty"`      // for pluginConfig setting
 	Credentials []string      `bson:"credentials,omitempty"` // credential needed
 	Commands    bool          `bson:"commands,omitempty"`    // allow arbitrary commands
