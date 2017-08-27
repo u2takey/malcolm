@@ -28,4 +28,7 @@ Malcolm is designed as a general job pipeline, and a ci/cd platform with simple 
 - volumn support : done
 
 
+## Examples
+- examples/example_docker.json : example pipeline for a example golang project : git clone -> go build -> docker build and push 
+
 
