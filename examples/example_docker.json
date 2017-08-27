@@ -1,0 +1,53 @@
+{
+    "title": "gitbuilddocker",
+    "description": "full ",
+    "storageClass": "ceph",
+    "storageSize": "2Gi",
+    "workSpace": "/data",
+    "taskgroups": [{
+            "title": "clone",
+            "constraint": {
+                "matchState": "Always"
+            },
+            "tasks": [{
+                "title": "git",
+                "plugin": "hub.c.163.com/u2takey/malcolm:git",
+                "command": [
+                    "/bin/sh ",
+                    "-c",
+                    "mkdir -p src/github.com/u2takey; cd  src/github.com/u2takey;git clone https://github.com/u2takey/sample-helloworld.git;pwd"
+                ]
+            }]
+        },
+        {
+            "title": "build",
+            "tasks": [{
+                "title": "go build",
+                "plugin": "hub.c.163.com/library/golang:1.8",
+                "command": [
+                    "/bin/sh",
+                    "-c",
+                    "ls;cd src/github.com/u2takey/sample-helloworld/go; go build helloworld.go"
+                ],
+                "constraint": "Success"
+            }]
+        },
+        {
+            "title": "docker ",
+            "tasks": [{
+                "title": "docker build",
+                "plugin": "hub.c.163.com/u2takey/malcolm:docker-1.12",
+                "command": [],
+                "environment": {
+                    "PLUGIN_USERNAME": "xx",
+                    "PLUGIN_PASSWORD": "yy",
+                    "PLUGIN_REPO": "wanglei/helloworld",
+                    "PLUGIN_MIRROR": "https://akwhf4un.mirror.aliyuncs.com",
+                    "PLUGIN_WORKDIR": "src/github.com/u2takey/sample-helloworld/go"
+                },
+                "privileged": true,
+                "constraint": "Success"
+            }]
+        }
+    ]
+}
