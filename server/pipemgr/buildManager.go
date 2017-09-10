@@ -390,9 +390,10 @@ func (m *PipeManager) buildFind(c context.Context, id string) *model.Build {
 func (m *PipeManager) BuildQueue(c context.Context) (res []*model.Build, err error) {
 	m.buildlock.Lock()
 	defer m.buildlock.Unlock()
-	for _, val := range m.builds {
-		res = append(res, val)
+	for key := range m.builds {
+		res = append(res, m.builds[key])
 	}
+	req.Entry(c).Debugln("builds in queue", len(m.builds))
 	return
 }
 

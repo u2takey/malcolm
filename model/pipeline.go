@@ -36,8 +36,8 @@ type TaskGroup struct {
 
 // Prerequisites is tells when taskgroup should running
 type Constraint struct {
-	MatchState       `bson:"matchState" json:"matchState"` // last step.statedetail match
-	MatchEnvs        map[string]string                     // step.env match val
+	MatchState       `bson:"matchState"` // last step.statedetail match
+	MatchEnvs        map[string]string   // step.env match val
 	MatchExpressions []LabelSelectorRequirement
 }
 
