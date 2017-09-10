@@ -51,6 +51,8 @@ func (s *Service) GetBuildInQueue(c *gin.Context) {
 	builds, err := s.pipem.BuildQueue(ctx)
 	if err != nil {
 		req.Entry(c).Error(err)
+		c.AbortWithError(400, err)
+		return
 	}
 	R(c, builds)
 }

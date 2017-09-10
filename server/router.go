@@ -47,7 +47,7 @@ func Load(cfg *model.Config) http.Handler {
 
 		//-----------------------------------------------------------------
 		// build
-		v1group.POST("/build/queue", svc.GetBuildInQueue)  // trigger build
+		v1group.GET("/build/queue", svc.GetBuildInQueue)   // build queue
 		v1group.POST("/pipe/:pipeid/build", svc.PostBuild) // trigger build
 		v1group.PATCH("/pipe/:pipeid/build/:buildid", svc.PatchBuild)
 		v1group.GET("/pipe/:pipeid/build/:buildid", svc.GetBuild) // get build
